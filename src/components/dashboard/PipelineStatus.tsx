@@ -11,7 +11,8 @@ import {
     Database,
     Wifi,
     Bot,
-    Users
+    Users,
+    LucideIcon
 } from "lucide-react";
 
 interface PipelineStatusProps {
@@ -19,14 +20,12 @@ interface PipelineStatusProps {
     isVisible: boolean;
 }
 
-const stepIcons: Record<string, React.ElementType> = {
+const stepIcons: Record<string, LucideIcon> = {
     stock: Database,
     xpoz: Users,
     gemini: Bot,
     save: Wifi,
 };
-
-const ease: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 export default function PipelineStatus({ steps, isVisible }: PipelineStatusProps) {
     if (!isVisible || steps.length === 0) return null;
@@ -34,35 +33,45 @@ export default function PipelineStatus({ steps, isVisible }: PipelineStatusProps
     const getStatusIcon = (status: PipelineStep['status']) => {
         switch (status) {
             case 'running':
-                return <Loader2 className="h-3.5 w-3.5 animate-spin text-indigo-400" />;
+                return <Loader2 className="h-4 w-4 animate-spin text-solarized-blue" />;
             case 'success':
-                return <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />;
+                return <CheckCircle2 className="h-4 w-4 text-solarized-green" />;
             case 'error':
-                return <XCircle className="h-3.5 w-3.5 text-red-400" />;
+                return <XCircle className="h-4 w-4 text-solarized-red" />;
             case 'mock':
-                return <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />;
+                return <AlertTriangle className="h-4 w-4 text-solarized-yellow" />;
             default:
-                return <Clock className="h-3.5 w-3.5 text-gray-600" />;
+                return <Clock className="h-4 w-4 text-foreground/30" />;
         }
     };
 
-    const getStatusBorder = (status: PipelineStep['status']) => {
+    const getStatusColor = (status: PipelineStep['status']) => {
         switch (status) {
-            case 'running': return 'border-l-indigo-500/40';
-            case 'success': return 'border-l-emerald-500/40';
-            case 'error': return 'border-l-red-500/40';
-            case 'mock': return 'border-l-amber-500/40';
-            default: return 'border-l-gray-700/40';
+            case 'running':
+                return 'border-solarized-blue/20 bg-solarized-blue/5';
+            case 'success':
+                return 'border-solarized-green/20 bg-solarized-green/5';
+            case 'error':
+                return 'border-solarized-red/20 bg-solarized-red/5';
+            case 'mock':
+                return 'border-solarized-yellow/20 bg-solarized-yellow/5';
+            default:
+                return 'border-foreground/10 bg-foreground/5';
         }
     };
 
-    const getStatusLabel = (status: PipelineStep['status']) => {
+    const getStatusBadge = (status: PipelineStep['status']) => {
         switch (status) {
-            case 'running': return <span className="text-indigo-400">EXEC</span>;
-            case 'success': return <span className="text-emerald-400">DONE</span>;
-            case 'error': return <span className="text-red-400">FAIL</span>;
-            case 'mock': return <span className="text-amber-400">MOCK</span>;
-            default: return <span className="text-gray-600">WAIT</span>;
+            case 'running':
+                return <span className="px-2 py-0.5 text-[9px] font-black uppercase bg-solarized-blue/10 text-solarized-blue rounded-full tracking-widest border border-solarized-blue/20">Running</span>;
+            case 'success':
+                return <span className="px-2 py-0.5 text-[9px] font-black uppercase bg-solarized-green/10 text-solarized-green rounded-full tracking-widest border border-solarized-green/20">Live</span>;
+            case 'error':
+                return <span className="px-2 py-0.5 text-[9px] font-black uppercase bg-solarized-red/10 text-solarized-red rounded-full tracking-widest border border-solarized-red/20">Failed</span>;
+            case 'mock':
+                return <span className="px-2 py-0.5 text-[9px] font-black uppercase bg-solarized-yellow/10 text-solarized-yellow rounded-full tracking-widest border border-solarized-yellow/20">Mock</span>;
+            default:
+                return <span className="px-2 py-0.5 text-[9px] font-black uppercase bg-foreground/10 text-foreground/30 rounded-full tracking-widest border border-foreground/10">Wait</span>;
         }
     };
 
@@ -71,54 +80,74 @@ export default function PipelineStatus({ steps, isVisible }: PipelineStatusProps
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3, ease }}
-            className="glass-card p-4 rounded-xl space-y-2"
+            className="glass-card p-5 rounded-3xl space-y-4 bg-transparent border-foreground/5"
         >
-            <div className="flex items-center justify-between mb-1">
-                <h3 className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.15em] flex items-center gap-1.5">
-                    <Wifi className="h-3 w-3 text-indigo-500/50" />
-                    Pipeline
+            <div className="flex items-center justify-between">
+                <h3 className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] flex items-center gap-2">
+                    <Wifi className="h-4 w-4 text-solarized-violet" />
+                    Analysis Pipeline
                 </h3>
-                <span className="text-[10px] text-gray-600 font-mono tabular-nums">
-                    {steps.filter(s => s.status === 'success' || s.status === 'mock').length}/{steps.length}
+                <span className="text-[10px] text-foreground/20 font-mono font-bold uppercase">
+                    {steps.filter(s => s.status === 'success' || s.status === 'mock').length}/{steps.length} SYNCED
                 </span>
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-2">
                 <AnimatePresence>
                     {steps.map((step, idx) => {
                         const Icon = stepIcons[step.id] || Database;
                         return (
                             <motion.div
                                 key={step.id}
-                                initial={{ opacity: 0, x: -6 }}
+                                initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: idx * 0.08, duration: 0.3, ease }}
-                                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border-l-2 bg-white/[0.02] transition-all ${getStatusBorder(step.status)}`}
+                                transition={{ delay: idx * 0.1 }}
+                                className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${getStatusColor(step.status)} shadow-sm`}
                             >
-                                <Icon className="h-3.5 w-3.5 text-gray-600 shrink-0" />
+                                <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-foreground/5 border border-foreground/5">
+                                    <Icon className="h-5 w-5 text-foreground/40" />
+                                </div>
 
                                 <div className="flex-1 min-w-0">
-                                    <span className="text-[11px] font-medium text-gray-300">{step.label}</span>
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-xs font-black text-foreground uppercase tracking-wider">{step.label}</span>
+                                        {getStatusBadge(step.status)}
+                                    </div>
                                     {step.message && (
-                                        <p className="text-[10px] text-gray-600 truncate font-mono">{step.message}</p>
+                                        <p className="text-[10px] text-foreground/30 font-medium truncate mt-1 uppercase tracking-tight">
+                                            {step.message}
+                                        </p>
                                     )}
                                 </div>
 
-                                <div className="flex items-center gap-2 shrink-0">
+                                <div className="flex items-center gap-3 flex-shrink-0">
                                     {step.duration && (
-                                        <span className="text-[9px] text-gray-600 font-mono tabular-nums">
+                                        <span className="text-[10px] text-foreground/20 font-mono font-bold">
                                             {(step.duration / 1000).toFixed(1)}s
                                         </span>
                                     )}
-                                    <span className="text-[9px] font-mono font-bold tracking-wider">
-                                        {getStatusLabel(step.status)}
-                                    </span>
+                                    {getStatusIcon(step.status)}
                                 </div>
                             </motion.div>
                         );
                     })}
                 </AnimatePresence>
+            </div>
+
+            {/* Legend */}
+            <div className="flex items-center gap-5 pt-3 border-t border-foreground/5 text-[9px] font-black uppercase tracking-widest text-foreground/20">
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-solarized-green/5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-solarized-green" />
+                    <span>Live</span>
+                </div>
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-solarized-yellow/5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-solarized-yellow" />
+                    <span>Mock</span>
+                </div>
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-solarized-red/5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-solarized-red" />
+                    <span>Failed</span>
+                </div>
             </div>
         </motion.div>
     );

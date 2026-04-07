@@ -164,47 +164,47 @@ graph LR
     Mock --> DISCARD["Discard from DB"]:::mock
 `;
 
-    export default function DocsPage() {
-        return (
-            <main className="min-h-screen text-gray-200 p-4 md:p-8">
-                <div className="relative z-10 max-w-5xl mx-auto space-y-12 pb-20">
-                    {/* Header */}
-                    <div className="flex items-center justify-between">
-                        <Link
-                            href="/"
-                            className="flex items-center gap-2 text-gray-500 hover:text-gray-300 transition group font-mono text-[11px] uppercase tracking-wider"
-                        >
-                            <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-1 transition" />
-                            Back to Terminal
-                        </Link>
-                        <div className="flex items-center gap-2 px-4 py-2 bg-white/[0.02] rounded-lg border border-white/[0.04]">
-                            <Book className="h-3.5 w-3.5 text-indigo-400/60" />
-                            <span className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-gray-500">Architecture</span>
-                        </div>
-                    </div>
-    
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="space-y-4 text-center md:text-left"
+export default function DocsPage() {
+    return (
+        <main className="min-h-screen text-gray-200 p-4 md:p-8 selection:bg-purple-500/30">
+            <div className="relative z-10 max-w-5xl mx-auto space-y-12 pb-20">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                    <Link
+                        href="/"
+                        className="flex items-center gap-2 text-gray-500 hover:text-white transition group font-medium"
                     >
-                        <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white">
-                            System Architecture
-                        </h1>
-                        <p className="text-gray-500 text-sm font-mono tracking-wide max-w-2xl">
-                            Under the hood of <span className="text-indigo-400">nfa</span> — a 3-engine, AI-powered quantitative pipeline.
-                        </p>
-                    </motion.div>
-    
-                    {/* System Overview */}
-                    <section className="space-y-6">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2.5 bg-white/[0.03] rounded-xl border border-white/[0.06] text-gray-400">
-                                <ShieldCheck className="h-5 w-5" />
-                            </div>
-                            <h2 className="text-lg font-bold text-gray-200">System Overview</h2>
+                        <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition" />
+                        Back to Dashboard
+                    </Link>
+                    <div className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-md rounded-full border border-white/10 shadow-sm">
+                        <Book className="h-4 w-4 text-purple-400" />
+                        <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Technical Documentation</span>
+                    </div>
+                </div>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-4 text-center md:text-left"
+                >
+                    <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">
+                        System Architecture
+                    </h1>
+                    <p className="text-gray-400 text-xl max-w-2xl font-medium">
+                        Under the hood of <span className="text-purple-400 font-bold">not-financial-advice</span> — a 3-engine, AI-powered money maker.
+                    </p>
+                </motion.div>
+
+                {/* System Overview */}
+                <section className="space-y-6">
+                    <div className="flex items-center gap-3">
+                        <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-400">
+                            <ShieldCheck className="h-6 w-6" />
                         </div>
-                        <p className="text-gray-500 text-sm leading-relaxed font-medium">
+                        <h2 className="text-2xl font-bold text-gray-200">System Overview</h2>
+                    </div>
+                    <p className="text-gray-400 text-lg leading-relaxed">
                         The architecture uses scheduled crons to orchestrate data across market intelligence providers, filter through a 3-engine conviction algorithm, and enforce a strict 3:1 Risk/Reward gate via Gemini Flash before persisting any recommendation.
                     </p>
                     <div className="glass-card p-2 rounded-3xl bg-black/20 border-white/5">

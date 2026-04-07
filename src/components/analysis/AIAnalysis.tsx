@@ -9,7 +9,6 @@ interface AIAnalysisProps {
     analysis: AIAnalysisType | any;
 }
 
-const ease: [number, number, number, number] = [0.16, 1, 0.3, 1];
 const fmt = (n: any) => (n != null ? `$${Number(n).toFixed(2)}` : null);
 
 function renderValue(value: any): string {
@@ -29,138 +28,145 @@ export default function AIAnalysis({ analysis }: AIAnalysisProps) {
     if (analysis.raw) {
         return (
             <motion.div
-                initial={{ opacity: 0, y: 8 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, ease }}
-                className="glass-card p-5 rounded-2xl"
+                className="glass-card p-6 rounded-3xl"
             >
-                <div className="flex items-center gap-2 mb-3">
-                    <AlertCircle className="h-4 w-4 text-gray-500" />
-                    <h2 className="text-xs font-mono font-bold text-gray-400 uppercase tracking-[0.15em]">Raw Output</h2>
+                <div className="flex items-center gap-2 mb-4">
+                    <AlertCircle className="h-5 w-5 text-solarized-violet" />
+                    <h2 className="text-xl font-bold text-foreground">Raw Analysis</h2>
                 </div>
-                <pre className="whitespace-pre-wrap font-mono text-xs text-gray-500 bg-black/30 p-4 rounded-xl border border-white/[0.04] leading-relaxed">{analysis.raw}</pre>
+                <pre className="whitespace-pre-wrap font-mono text-sm text-foreground/60 bg-foreground/5 p-4 rounded-xl border border-foreground/10">{analysis.raw}</pre>
             </motion.div>
         );
     }
 
-    const verdictColors: Record<string, string> = {
-        Buy: "border-l-emerald-400 bg-emerald-500/[0.04]",
-        Sell: "border-l-red-400 bg-red-500/[0.04]",
-        Hold: "border-l-amber-400 bg-amber-500/[0.04]",
-    };
-
-    const verdictText: Record<string, string> = {
-        Buy: "text-emerald-400",
-        Sell: "text-red-400",
-        Hold: "text-amber-400",
-    };
-
     return (
         <motion.div
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease }}
             className="space-y-4"
         >
-            {/* Verdict */}
-            <div className={`glass-card p-5 rounded-2xl border-l-[3px] relative overflow-hidden ${verdictColors[analysis.recommendation] || verdictColors.Hold}`}>
+            {/* Recommendation Hero Card */}
+            <div className={`
+                glass-card p-6 rounded-3xl border-l-8 relative overflow-hidden
+                ${analysis.recommendation === 'Buy' ? 'border-l-solarized-green bg-solarized-green/10' :
+                    analysis.recommendation === 'Sell' ? 'border-l-solarized-red bg-solarized-red/10' :
+                        'border-l-solarized-yellow bg-solarized-yellow/10'}
+            `}>
                 <div className="flex justify-between items-start relative z-10">
                     <div>
-                        <h3 className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-gray-600 mb-1">Verdict</h3>
-                        <p className={`text-3xl font-black tracking-tight ${verdictText[analysis.recommendation] || verdictText.Hold}`}>
+                        <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/40 mb-1">Verdict</h3>
+                        <p className={`text-4xl font-black tracking-tighter
+                            ${analysis.recommendation === 'Buy' ? 'text-solarized-green' :
+                                analysis.recommendation === 'Sell' ? 'text-solarized-red' :
+                                    'text-solarized-yellow'}
+                        `}>
                             {analysis.recommendation}
                         </p>
                     </div>
 
                     {analysis.conviction_score && (
                         <div className="text-right">
-                            <h3 className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-gray-600 mb-1">Conviction</h3>
-                            <div className="flex items-baseline gap-1 justify-end">
-                                <span className="text-3xl font-black text-white tabular-nums font-mono">{analysis.conviction_score}</span>
-                                <span className="text-sm text-gray-600 font-mono">/10</span>
+                            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/40 mb-1">Conviction</h3>
+                            <div className="flex items-center gap-2 justify-end">
+                                <span className="text-3xl font-black text-foreground">{analysis.conviction_score}</span>
+                                <span className="text-lg text-foreground/40 font-medium">/10</span>
                             </div>
                         </div>
                     )}
                 </div>
 
-                {/* Price Range */}
+                {/* Price Range Badge */}
                 {analysis.price_range_low && analysis.price_range_high && (
-                    <div className="mt-5 flex items-center gap-2 px-3 py-2 bg-white/[0.03] rounded-lg w-fit border border-white/[0.06]">
-                        <Target className="h-3.5 w-3.5 text-indigo-400/60" />
-                        <span className="text-[10px] font-mono text-gray-500 uppercase tracking-wider">5D Target:</span>
-                        <span className="font-mono text-sm font-bold text-gray-300 tabular-nums">{fmt(analysis.price_range_low)} – {fmt(analysis.price_range_high)}</span>
+                    <div className="mt-6 flex items-center gap-2 px-4 py-2 bg-foreground/5 rounded-xl w-fit border border-foreground/10 backdrop-blur-sm">
+                        <Target className="h-4 w-4 text-solarized-violet" />
+                        <span className="text-xs font-bold text-foreground/40 uppercase tracking-wide">Target (5d):</span>
+                        <span className="font-mono font-bold text-foreground/80">{fmt(analysis.price_range_low)} – {fmt(analysis.price_range_high)}</span>
                     </div>
                 )}
-
-                {/* TP / SL / RR */}
+                
+                {/* Math targets */}
                 {analysis.take_profit && analysis.stop_loss && (
                     <div className="mt-4 grid grid-cols-3 gap-2">
-                        <div className="bg-emerald-500/[0.06] p-3 rounded-lg border border-emerald-500/10">
-                            <div className="text-[9px] text-emerald-500/60 font-mono font-bold uppercase tracking-[0.15em] mb-1">TP</div>
-                            <div className="text-base font-mono text-emerald-400 font-bold tabular-nums">{fmt(analysis.take_profit)}</div>
-                        </div>
-                        <div className="bg-red-500/[0.06] p-3 rounded-lg border border-red-500/10">
-                            <div className="text-[9px] text-red-500/60 font-mono font-bold uppercase tracking-[0.15em] mb-1">SL</div>
-                            <div className="text-base font-mono text-red-400 font-bold tabular-nums">{fmt(analysis.stop_loss)}</div>
-                        </div>
-                        <div className="bg-white/[0.02] p-3 rounded-lg border border-white/[0.06]">
-                            <div className="text-[9px] text-gray-500 font-mono font-bold uppercase tracking-[0.15em] mb-1">R/R</div>
-                            <div className="text-base font-mono text-gray-300 font-bold tabular-nums">{analysis.risk_reward_ratio != null ? `${Number(analysis.risk_reward_ratio).toFixed(2)}x` : "—"}</div>
-                        </div>
+                         <div className="bg-solarized-green/10 p-3 rounded-lg border border-solarized-green/20">
+                              <div className="text-[10px] text-solarized-green font-bold uppercase tracking-widest mb-1 opacity-70">Take Profit</div>
+                              <div className="text-lg md:text-xl font-mono text-solarized-green font-bold">{fmt(analysis.take_profit)}</div>
+                         </div>
+                         <div className="bg-solarized-red/10 p-3 rounded-lg border border-solarized-red/20">
+                              <div className="text-[10px] text-solarized-red font-bold uppercase tracking-widest mb-1 opacity-70">Stop Loss</div>
+                              <div className="text-lg md:text-xl font-mono text-solarized-red font-bold">{fmt(analysis.stop_loss)}</div>
+                         </div>
+                         <div className="bg-foreground/5 p-3 rounded-lg border border-foreground/10">
+                              <div className="text-[10px] text-foreground/40 font-bold uppercase tracking-widest mb-1">Risk/Reward</div>
+                              <div className="text-lg md:text-xl font-mono text-foreground/80 font-bold">{analysis.risk_reward_ratio != null ? `${Number(analysis.risk_reward_ratio).toFixed(2)}x` : "N/A"}</div>
+                         </div>
                     </div>
                 )}
             </div>
 
-            {/* Analysis Detail Cards */}
-            <div className="grid md:grid-cols-2 gap-3">
-                <div className="glass-card p-4 rounded-xl">
-                    <div className="flex items-center gap-2 mb-2">
-                        <TrendingUp className="h-3.5 w-3.5 text-indigo-400/50" />
-                        <h3 className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-[0.15em]">Trend</h3>
+            {/* Analysis Grid */}
+            <div className="grid md:grid-cols-2 gap-4">
+                <div className="glass-card p-5 rounded-3xl">
+                    <div className="flex items-center gap-2 mb-3">
+                        <div className="p-2 bg-solarized-blue/10 rounded-lg text-solarized-blue">
+                            <TrendingUp className="h-4 w-4" />
+                        </div>
+                        <h3 className="font-bold text-foreground/80">Trend Analysis</h3>
                     </div>
-                    <p className="text-xs text-gray-400 leading-relaxed">{renderValue(analysis.trend)}</p>
+                    <p className="text-sm text-foreground/60 leading-relaxed">{renderValue(analysis.trend)}</p>
                 </div>
 
-                <div className="glass-card p-4 rounded-xl">
-                    <div className="flex items-center gap-2 mb-2">
-                        <ShieldCheck className="h-3.5 w-3.5 text-indigo-400/50" />
-                        <h3 className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-[0.15em]">Support / Resistance</h3>
+                <div className="glass-card p-5 rounded-3xl">
+                    <div className="flex items-center gap-2 mb-3">
+                        <div className="p-2 bg-solarized-violet/10 rounded-lg text-solarized-violet">
+                            <ShieldCheck className="h-4 w-4" />
+                        </div>
+                        <h3 className="font-bold text-foreground/80">Support & Resistance</h3>
                     </div>
-                    <p className="text-xs text-gray-400 leading-relaxed">{renderValue(analysis.support_resistance)}</p>
+                    <p className="text-sm text-foreground/60 leading-relaxed">{renderValue(analysis.support_resistance)}</p>
                 </div>
 
-                <div className="glass-card p-4 rounded-xl md:col-span-2">
-                    <div className="flex items-center gap-2 mb-2">
-                        <Activity className="h-3.5 w-3.5 text-indigo-400/50" />
-                        <h3 className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-[0.15em]">Projection</h3>
+                <div className="glass-card p-5 rounded-3xl md:col-span-2">
+                    <div className="flex items-center gap-2 mb-3">
+                        <div className="p-2 bg-solarized-green/10 rounded-lg text-solarized-green">
+                            <Activity className="h-4 w-4" />
+                        </div>
+                        <h3 className="font-bold text-foreground/80">Strategy Projection</h3>
                     </div>
-                    <p className="text-xs text-gray-400 leading-relaxed">{renderValue(analysis.projection)}</p>
+                    <p className="text-sm text-foreground/60 leading-relaxed">{renderValue(analysis.projection)}</p>
                 </div>
             </div>
 
-            {/* Transparency */}
+            {/* Transparency Section */}
             {analysis.debug_prompt && (
-                <div className="glass-card p-4 rounded-xl border border-white/[0.04]">
+                <div className="glass-card p-5 rounded-3xl border border-solarized-magenta/20 bg-solarized-magenta/5">
                     <div className="flex items-center gap-2 mb-3">
-                        <Activity className="h-3.5 w-3.5 text-gray-600" />
-                        <h3 className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-[0.15em]">Transparency</h3>
+                        <div className="p-2 bg-solarized-magenta/10 rounded-lg text-solarized-magenta">
+                            <Activity className="h-4 w-4" />
+                        </div>
+                        <h3 className="font-bold text-foreground/80">AI Transparency</h3>
                     </div>
 
+                    <p className="text-sm text-foreground/40 mb-4">
+                        View the exact prompt sent to the AI model and the raw sentiment data used for this analysis.
+                    </p>
+
                     {analysis.sentiment && (
-                        <div className="mb-4 p-3 bg-black/20 rounded-lg border border-white/[0.04]">
-                            <h4 className="text-[9px] font-mono font-bold text-gray-600 uppercase tracking-[0.2em] mb-2">Sentiment Signal</h4>
-                            <div className="flex items-center gap-2 mb-1.5">
-                                <span className={`text-xs font-bold ${analysis.sentiment.sentiment === 'Bullish' ? 'text-emerald-400' :
-                                    analysis.sentiment.sentiment === 'Bearish' ? 'text-red-400' : 'text-gray-400'
-                                }`}>
+                        <div className="mb-4 p-4 bg-foreground/5 rounded-xl border border-foreground/10">
+                            <h4 className="text-xs font-bold text-foreground/40 uppercase tracking-widest mb-2">Social Sentiment Signal</h4>
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className={`text-sm font-bold ${analysis.sentiment.sentiment === 'Bullish' ? 'text-solarized-green' :
+                                        analysis.sentiment.sentiment === 'Bearish' ? 'text-solarized-red' : 'text-foreground/40'
+                                    }`}>
                                     {analysis.sentiment.sentiment}
                                 </span>
-                                <span className="text-[10px] text-gray-600 font-mono tabular-nums">
-                                    {(analysis.sentiment.score * 100).toFixed(0)}% conf.
+                                <span className="text-xs text-foreground/30">
+                                    ({(analysis.sentiment.score * 100).toFixed(0)}% confidence)
                                 </span>
                             </div>
-                            <p className="text-[10px] text-gray-500 italic font-mono leading-relaxed">
-                                {analysis.sentiment.summary}
+                            <p className="text-xs text-foreground/40 italic">
+                                "{analysis.sentiment.summary}"
                             </p>
                         </div>
                     )}

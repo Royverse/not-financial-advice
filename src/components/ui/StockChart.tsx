@@ -34,17 +34,12 @@ export default function StockChart({ data }: StockChartProps) {
     const timeSeries = data?.["Time Series (Daily)"];
 
     if (!timeSeries) {
-        return <div className="text-red-400/60 p-4 font-mono text-xs">No chart data available</div>;
+        return <div className="text-red-400 p-4 font-bold">No chart data available</div>;
     }
 
-    const labels = Object.keys(timeSeries).reverse().slice(-30);
+    const labels = Object.keys(timeSeries).reverse().slice(-30); // Last 30 days
     const prices = labels.map((date) => parseFloat(timeSeries[date]["4. close"]));
     const symbolName = data["Meta Data"]["2. Symbol"];
-
-    const isUp = prices[prices.length - 1] >= prices[0];
-
-    const lineColor = isUp ? "#34d399" : "#f87171"; // emerald or red
-    const lineColorAlpha = isUp ? "rgba(52, 211, 153, " : "rgba(248, 113, 113, ";
 
     const chartData = {
         labels,
@@ -52,25 +47,21 @@ export default function StockChart({ data }: StockChartProps) {
             {
                 label: symbolName,
                 data: prices,
-                borderColor: lineColor,
-                borderWidth: 1.5,
+                borderColor: "#818cf8", // indigo-400
                 backgroundColor: (context: ScriptableContext<"line">) => {
                     const ctx = context.chart.ctx;
                     const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-                    gradient.addColorStop(0, `${lineColorAlpha}0.12)`);
-                    gradient.addColorStop(1, `${lineColorAlpha}0.0)`);
+                    gradient.addColorStop(0, "rgba(129, 140, 248, 0.4)");
+                    gradient.addColorStop(1, "rgba(129, 140, 248, 0.0)");
                     return gradient;
                 },
                 fill: true,
-                tension: 0.3,
-                pointBackgroundColor: "transparent",
-                pointBorderColor: "transparent",
-                pointBorderWidth: 0,
-                pointRadius: 0,
-                pointHoverRadius: 4,
-                pointHoverBackgroundColor: lineColor,
-                pointHoverBorderColor: "#fff",
-                pointHoverBorderWidth: 1,
+                tension: 0.4,
+                pointBackgroundColor: "#fff",
+                pointBorderColor: "#818cf8",
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
             },
         ],
     };
@@ -84,24 +75,24 @@ export default function StockChart({ data }: StockChartProps) {
             },
             title: {
                 display: true,
-                text: `${symbolName} — 30D`,
-                color: '#4a5568',
+                text: `${symbolName} - 30 Day Trend`,
+                color: '#94a3b8', // slate-400
                 font: {
-                    size: 11,
+                    size: 16,
                     weight: 'bold' as const,
-                    family: 'monospace'
+                    family: 'sans-serif'
                 },
-                padding: { bottom: 16 }
+                padding: { bottom: 20 }
             },
             tooltip: {
-                backgroundColor: 'rgba(10, 14, 23, 0.95)',
-                titleColor: '#8892a4',
-                bodyColor: '#e8ecf1',
-                titleFont: { family: 'monospace', size: 10 },
-                bodyFont: { family: 'monospace', size: 12, weight: 'bold' as const },
-                borderColor: 'rgba(255, 255, 255, 0.06)',
+                backgroundColor: 'rgba(15, 23, 42, 0.9)', // slate-900
+                titleColor: '#e2e8f0', // slate-200
+                bodyColor: '#e2e8f0',
+                borderColor: 'rgba(255, 255, 255, 0.1)',
                 borderWidth: 1,
-                padding: 10,
+                padding: 12,
+                boxPadding: 4,
+                usePointStyle: true,
                 displayColors: false,
                 callbacks: {
                     label: function (context: any) {
@@ -112,23 +103,16 @@ export default function StockChart({ data }: StockChartProps) {
         },
         scales: {
             x: {
-                ticks: {
-                    color: '#333d4f',
-                    font: { size: 9, family: 'monospace' },
-                    maxRotation: 0,
-                    maxTicksLimit: 8,
-                },
-                grid: { display: false },
-                border: { display: false },
+                ticks: { color: '#64748b', font: { size: 10 } }, // slate-500
+                grid: { display: false }
             },
             y: {
                 ticks: {
-                    color: '#333d4f',
-                    font: { size: 9, family: 'monospace' },
+                    color: '#64748b', // slate-500 
+                    font: { size: 10 },
                     callback: function (value: any) { return '$' + value; }
                 },
-                grid: { color: 'rgba(255, 255, 255, 0.03)', lineWidth: 1 },
-                border: { display: false },
+                grid: { color: 'rgba(255, 255, 255, 0.05)', borderDash: [4, 4] }
             }
         },
         interaction: {

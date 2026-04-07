@@ -44,20 +44,31 @@ export const metadata: Metadata = {
   },
 };
 
+import FallingLeaves from "@/components/ui/FallingLeaves";
+import { ThemeProvider } from "@/components/ui/ThemeProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="theme-color" content="#0f172a" />
+        <meta name="theme-color" content="#fdf6e3" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <ThemeProvider
+          attribute="data-theme"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <FallingLeaves />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
