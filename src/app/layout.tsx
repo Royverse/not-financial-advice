@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "nfa. — not financial advice",
   description:
-    "Autonomous AI-powered stock analysis platform. Real-time market scanning, Gemini AI analysis, social sentiment tracking, and conviction scoring — institutional-grade vibes only.",
+    "Autonomous AI-powered stock analysis platform. Real-time market scanning, Gemini AI analysis, social sentiment tracking, and conviction scoring.",
   keywords: [
     "stock analysis",
     "AI trading",

@@ -30,7 +30,7 @@ export default function AIAnalysis({ analysis }: AIAnalysisProps) {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="glass-card p-6 rounded-3xl"
+                className="glass-card p-6"
             >
                 <div className="flex items-center gap-2 mb-4">
                     <AlertCircle className="h-5 w-5 text-solarized-violet" />
@@ -49,10 +49,10 @@ export default function AIAnalysis({ analysis }: AIAnalysisProps) {
         >
             {/* Recommendation Hero Card */}
             <div className={`
-                glass-card p-6 rounded-3xl border-l-8 relative overflow-hidden
-                ${analysis.recommendation === 'Buy' ? 'border-l-solarized-green bg-solarized-green/10' :
-                    analysis.recommendation === 'Sell' ? 'border-l-solarized-red bg-solarized-red/10' :
-                        'border-l-solarized-yellow bg-solarized-yellow/10'}
+                glass-card p-6 border-l-[12px] relative overflow-hidden shadow-none
+                ${analysis.recommendation === 'Buy' ? 'border-l-solarized-green/40 bg-solarized-green/5' :
+                    analysis.recommendation === 'Sell' ? 'border-l-solarized-red/40 bg-solarized-red/5' :
+                        'border-l-solarized-yellow/40 bg-solarized-yellow/5'}
             `}>
                 <div className="flex justify-between items-start relative z-10">
                     <div>
@@ -107,7 +107,7 @@ export default function AIAnalysis({ analysis }: AIAnalysisProps) {
 
             {/* Analysis Grid */}
             <div className="grid md:grid-cols-2 gap-4">
-                <div className="glass-card p-5 rounded-3xl">
+                <div className="glass-card p-5">
                     <div className="flex items-center gap-2 mb-3">
                         <div className="p-2 bg-solarized-blue/10 rounded-lg text-solarized-blue">
                             <TrendingUp className="h-4 w-4" />
@@ -117,7 +117,7 @@ export default function AIAnalysis({ analysis }: AIAnalysisProps) {
                     <p className="text-sm text-foreground/60 leading-relaxed">{renderValue(analysis.trend)}</p>
                 </div>
 
-                <div className="glass-card p-5 rounded-3xl">
+                <div className="glass-card p-5">
                     <div className="flex items-center gap-2 mb-3">
                         <div className="p-2 bg-solarized-violet/10 rounded-lg text-solarized-violet">
                             <ShieldCheck className="h-4 w-4" />
@@ -127,7 +127,7 @@ export default function AIAnalysis({ analysis }: AIAnalysisProps) {
                     <p className="text-sm text-foreground/60 leading-relaxed">{renderValue(analysis.support_resistance)}</p>
                 </div>
 
-                <div className="glass-card p-5 rounded-3xl md:col-span-2">
+                <div className="glass-card p-5 md:col-span-2">
                     <div className="flex items-center gap-2 mb-3">
                         <div className="p-2 bg-solarized-green/10 rounded-lg text-solarized-green">
                             <Activity className="h-4 w-4" />
@@ -140,7 +140,7 @@ export default function AIAnalysis({ analysis }: AIAnalysisProps) {
 
             {/* Transparency Section */}
             {analysis.debug_prompt && (
-                <div className="glass-card p-5 rounded-3xl border border-solarized-magenta/20 bg-solarized-magenta/5">
+                <div className="glass-card p-5 bg-solarized-magenta/5 shadow-none">
                     <div className="flex items-center gap-2 mb-3">
                         <div className="p-2 bg-solarized-magenta/10 rounded-lg text-solarized-magenta">
                             <Activity className="h-4 w-4" />

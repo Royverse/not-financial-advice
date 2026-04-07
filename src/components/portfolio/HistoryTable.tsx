@@ -69,7 +69,7 @@ export default function HistoryTable() {
     };
 
     return (
-        <div className="glass-card rounded-3xl p-4 md:p-6 h-full flex flex-col overflow-hidden bg-transparent border-foreground/5">
+        <div className="glass-card p-4 md:p-6 h-full flex flex-col overflow-hidden bg-transparent border-foreground/5">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 md:mb-6 gap-3 shrink-0">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-solarized-violet/10 rounded-xl text-solarized-violet">

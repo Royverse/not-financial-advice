@@ -32,7 +32,7 @@ export default function SentimentAnalysis({ sentiment }: SentimentAnalysisProps)
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="glass-card p-6 rounded-3xl space-y-4"
+            className="glass-card p-6 space-y-4 shadow-none"
         >
             <div className="flex items-center gap-2 mb-2">
                 <div className="p-2 bg-solarized-blue/10 rounded-lg text-solarized-blue">

@@ -1,4 +1,4 @@
-import { GeminiService } from './src/lib/gemini';
+import { GeminiService } from '../../src/lib/services/gemini';
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 

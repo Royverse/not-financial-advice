@@ -47,7 +47,7 @@ function StatCard({ label, value, sub, color = "text-foreground" }: {
     label: string; value: string | null; sub?: string; color?: string;
 }) {
     return (
-        <div className="glass-card p-4 rounded-2xl flex flex-col gap-1 border-foreground/5 bg-foreground/5">
+        <div className="glass-card p-4 flex flex-col gap-1 border-foreground/5 bg-foreground/5">
             <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest">{label}</p>
             <p className={`text-2xl font-black font-mono ${color}`}>{value ?? "—"}</p>
             {sub && <p className="text-xs text-foreground/30 font-medium">{sub}</p>}
@@ -144,7 +144,7 @@ export default function PaperPortfolio() {
                                 key={trade.id}
                                 initial={{ opacity: 0, y: 8 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="glass-card p-4 rounded-2xl border-l-4 border-l-solarized-blue border-foreground/5 bg-foreground/5"
+                                className="glass-card p-4 border-l-4 border-l-solarized-blue border-foreground/5 bg-foreground/5"
                             >
                                 <div className="flex justify-between items-center mb-3">
                                     <span className="font-black text-lg text-foreground">{trade.ticker}</span>

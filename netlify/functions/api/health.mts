@@ -1,9 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
-import { GeminiService } from '../../../src/lib/gemini';
+import { supabase } from '../../../src/lib/services/supabase';
+import { GeminiService } from '../../../src/lib/services/gemini';
 import axios from 'axios';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const ALPHA_VANTAGE_API_KEY = process.env.ALPHA_VANTAGE_API_KEY;
 
 // Reusable helper (copied from route.ts)
@@ -50,8 +48,7 @@ export default async (req: Request) => {
 
     // 1. Check Supabase
     try {
-        const supabase = createClient(supabaseUrl, supabaseKey);
-        const { error } = await supabase.from('market_scans').select('count');
+        const { error } = await supabase.from('market_scans').select('count', { count: 'exact', head: true });
         if (error) throw error;
         status.services.supabase.status = 'healthy';
         status.services.supabase.message = 'Connected';
@@ -97,7 +94,6 @@ export default async (req: Request) => {
 
     // 5. Check Cron Job
     try {
-        const supabase = createClient(supabaseUrl, supabaseKey);
         const { data: lastScan, error } = await supabase
             .from('market_scans')
             .select('created_at, status')

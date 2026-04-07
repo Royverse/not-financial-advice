@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { StockData, AIAnalysis, XpozSentiment } from '@/types';
+import { GeminiService } from '@/lib/services/gemini';
+import { supabase } from '@/lib/services/supabase';
 
 export interface PipelineStep {
     id: string;

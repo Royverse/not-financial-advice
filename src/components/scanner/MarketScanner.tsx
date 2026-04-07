@@ -172,7 +172,7 @@ export default function MarketScanner() {
                                         key={op.ticker}
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        className="p-5 glass-card rounded-2xl hover:bg-foreground/5 transition group border-l-4 border-l-solarized-green"
+                                        className="p-5 glass-card hover:bg-foreground/5 transition group border-l-4 border-l-solarized-green"
                                     >
                                         <div className="flex justify-between items-start mb-3">
                                             <div className="flex items-center gap-3">

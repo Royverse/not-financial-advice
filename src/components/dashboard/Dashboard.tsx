@@ -44,12 +44,12 @@ export default function Dashboard() {
                         <ApiStatus />
                     </div>
 
-                    <div className="flex bg-solarized-base2/50 dark:bg-slate-800/50 p-1.5 rounded-2xl border border-white/5 backdrop-blur-xl w-full md:w-auto overflow-x-auto custom-scrollbar">
+                    <div className="flex glass-card p-1.5 w-full md:w-auto overflow-x-auto custom-scrollbar border-foreground/5 shadow-none backdrop-blur-md">
                         <button
                             onClick={() => setView("live")}
                             className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${view === "live"
-                                ? "bg-solarized-blue/20 text-solarized-blue border border-solarized-blue/30 shadow-sm"
-                                : "text-foreground/60 hover:text-foreground hover:bg-white/5"
+                                ? "bg-solarized-blue/20 text-solarized-blue border border-solarized-blue/10 shadow-sm"
+                                : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
                                 }`}
                         >
                             <TrendingUp className="h-4 w-4" />
@@ -58,8 +58,8 @@ export default function Dashboard() {
                         <button
                             onClick={() => setView("scanner")}
                             className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${view === "scanner"
-                                ? "bg-solarized-violet/20 text-solarized-violet border border-solarized-violet/30 shadow-sm"
-                                : "text-foreground/60 hover:text-foreground hover:bg-white/5"
+                                ? "bg-solarized-violet/20 text-solarized-violet border border-solarized-violet/10 shadow-sm"
+                                : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
                                 }`}
                         >
                             <Zap className="h-4 w-4" />
@@ -69,7 +69,7 @@ export default function Dashboard() {
                             onClick={() => setView("history")}
                             className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${view === "history"
                                 ? "bg-solarized-magenta/20 text-solarized-magenta border border-solarized-magenta/30 shadow-sm"
-                                : "text-foreground/60 hover:text-foreground hover:bg-white/5"
+                                : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
                                 }`}
                         >
                             <LayoutGrid className="h-4 w-4" />
@@ -78,8 +78,8 @@ export default function Dashboard() {
                         <button
                             onClick={() => setView("portfolio")}
                             className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${view === "portfolio"
-                                ? "bg-solarized-green/20 text-solarized-green border border-solarized-green/30 shadow-sm"
-                                : "text-foreground/60 hover:text-foreground hover:bg-white/5"
+                                ? "bg-solarized-green/20 text-solarized-green border border-solarized-green/10 shadow-sm"
+                                : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
                                 }`}
                         >
                             <Briefcase className="h-4 w-4" />
@@ -90,7 +90,7 @@ export default function Dashboard() {
                     <div className="flex items-center gap-2">
                         <Link
                             href="/docs"
-                            className="p-3 bg-solarized-base2/50 dark:bg-slate-800/50 hover:bg-white/10 rounded-2xl border border-white/5 text-foreground/60 hover:text-foreground transition group"
+                            className="p-3 glass-card hover:bg-foreground/5 border-foreground/5 text-foreground/60 hover:text-foreground transition group shadow-none"
                             title="Technical Docs"
                         >
                             <BookOpen className="h-5 w-5 group-hover:scale-110 transition" />
@@ -110,7 +110,7 @@ export default function Dashboard() {
                             <motion.form
                                 layout
                                 onSubmit={handleSubmit}
-                                className="glass-card p-2 rounded-2xl flex items-center gap-2 relative z-20"
+                                className="glass-card p-2 flex items-center gap-2 relative z-20 shadow-none"
                             >
                                 <div className="p-3 bg-solarized-blue/10 rounded-xl">
                                     <Search className="h-5 w-5 text-solarized-blue" />
@@ -127,7 +127,7 @@ export default function Dashboard() {
                                     disabled={loading}
                                     className="px-6 py-3 bg-solarized-blue hover:bg-solarized-blue/80 text-white rounded-xl font-bold transition disabled:opacity-50 shadow-lg shadow-solarized-blue/20"
                                 >
-                                    {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : "VIBE CHECK"}
+                                    {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : "ANALYZE"}
                                 </button>
                             </motion.form>
 
@@ -154,7 +154,7 @@ export default function Dashboard() {
                                     animate={{ opacity: 1 }}
                                     className="space-y-6"
                                 >
-                                    <div className="glass-card p-6 rounded-3xl space-y-4">
+                                    <div className="glass-card p-6 space-y-4 shadow-none">
                                         <div className="flex justify-between items-center">
                                             <div>
                                                 <h2 className="text-3xl font-black text-foreground">{stockData["Meta Data"]["2. Symbol"]}</h2>
@@ -175,14 +175,17 @@ export default function Dashboard() {
                             )}
 
                             {!stockData && !loading && (
-                                <div className="glass-card p-8 rounded-3xl text-center space-y-4 border-dashed border-foreground/10 bg-transparent">
-                                    <div className="w-16 h-16 bg-foreground/5 rounded-full flex items-center justify-center mx-auto">
-                                        <BarChart3 className="h-8 w-8 text-foreground/20" />
+                                <div className="glass-card h-[400px] flex flex-col items-center justify-center gap-6 relative overflow-hidden shadow-none">
+                                    <div className="relative">
+                                        <div className="absolute inset-0 bg-solarized-blue/20 blur-2xl rounded-full" />
+                                        <BarChart3 className="h-20 w-20 text-foreground/10 relative z-10" />
                                     </div>
-                                    <h3 className="text-foreground/60 font-bold text-lg">System Online</h3>
-                                    <p className="text-foreground/40 text-sm max-w-xs mx-auto">
-                                        drop a ticker symbol to pass the vibe check.
-                                    </p>
+                                    <div className="text-center space-y-2 relative z-10">
+                                        <h3 className="text-foreground/60 font-bold text-xl uppercase tracking-widest">System Online</h3>
+                                        <p className="text-foreground/30 text-sm max-w-[200px] mx-auto font-medium">
+                                            enter a ticker symbol to begin analysis.
+                                        </p>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -192,17 +195,20 @@ export default function Dashboard() {
                             {stockData ? (
                                 <motion.div
                                     layout
-                                    className="glass-card h-full rounded-3xl p-6 flex flex-col relative overflow-hidden"
+                                    className="glass-card h-full p-6 flex flex-col relative overflow-hidden"
                                 >
                                     <StockChart data={stockData} />
                                 </motion.div>
                             ) : (
-                                <div className="h-full rounded-3xl border border-foreground/5 bg-foreground/5 flex flex-col items-center justify-center gap-4">
+                                <div className="glass-card h-full flex flex-col items-center justify-center gap-6 relative overflow-hidden shadow-none">
                                     <div className="relative">
-                                        <div className="absolute inset-0 bg-solarized-blue/20 blur-xl rounded-full" />
-                                        <BarChart3 className="h-24 w-24 text-foreground/10 relative z-10" />
+                                        <div className="absolute inset-0 bg-solarized-blue/20 blur-3xl rounded-full" />
+                                        <BarChart3 className="h-32 w-32 text-foreground/5 relative z-10" />
                                     </div>
-                                    <p className="text-foreground/20 font-medium tracking-widest text-sm uppercase">Waiting for Data Stream...</p>
+                                    <div className="text-center space-y-2 relative z-10">
+                                        <h3 className="text-foreground/20 font-bold tracking-[0.3em] text-lg uppercase">Waiting for Data Stream</h3>
+                                        <p className="text-foreground/10 text-xs font-mono">STANDBY — INITIALIZING ALPHA</p>
+                                    </div>
                                 </div>
                             )}
                         </div>

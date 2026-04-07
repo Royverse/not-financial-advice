@@ -80,7 +80,7 @@ export default function PipelineStatus({ steps, isVisible }: PipelineStatusProps
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="glass-card p-5 rounded-3xl space-y-4 bg-transparent border-foreground/5"
+            className="glass-card p-5 space-y-4 shadow-none"
         >
             <div className="flex items-center justify-between">
                 <h3 className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] flex items-center gap-2">

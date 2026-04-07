@@ -1,4 +1,4 @@
-import { GeminiService } from '../../../src/lib/gemini';
+import { GeminiService } from '../../../src/lib/services/gemini';
 
 export default async (req: Request) => {
     if (req.method !== 'POST') {

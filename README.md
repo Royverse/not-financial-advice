@@ -1,43 +1,44 @@
-# nfa. — not financial advice. 📉
+# nfa. — not financial advice
 
-welcome to **nfa.** — the autonomous AI stock analysis engine built for the next generation of traders. institutional-grade vibes only, no cap.
+Autonomous AI stock analysis platform designed for objective market intelligence and sentiment tracking.
 
-## ✨ the vision
+## ✨ Project Summary
 
-we use **Gemini AI** and **Real-time Sentiment Analysis** to scan the market, perform deep-dive "vibe checks" on top gainers, and provide you with pure alpha. 
+**nfa.** uses **Gemini AI** and **Real-time Sentiment Analysis** to scan markets, perform technical deep-dives on high-velocity tickers, and provide data-driven convictions.
 
-stop doomscrolling. let the bot do the heavy lifting.
+Objective insights derived from market indicators, social trends, and liquidity metrics.
 
-## 🚀 features
+## 🚀 Features
 
-- **AI Vibe Checks:** institutional-grade analysis using Gemini 2.0.
-- **Sentiment Velocity:** tracking real-time heat on X (Twitter) via Xpoz.
-- **3D Atmospheric UI:** premium Solarized theme with Zen physics-based backgrounds.
-- **Paper Portfolio:** track potential gains without the emotional damage.
-- **Institutional Export:** download your convictions to Excel for the records.
+- **AI Technical Analysis:** Multi-layered analysis using Gemini 2.0.
+- **Sentiment Monitoring:** Real-time social heat tracking on X (Twitter) via Xpoz.
+- **Enhanced Glassmorphism UI:** Premium Solarized design system with high-depth visual containers.
+- **Atmospheric Background:** Physics-based 3D background that responds to application state.
+- **Paper Portfolio Tracking:** Manage simulated trades and track strategy outcomes.
+- **Institutional Export:** Export comprehensive analysis logs to Excel.
 
-## 🛠️ tech stack
+## 🛠️ Technical Stack
 
-- **Frontend:** Next.js 15 (Turbopack), Tailwind CSS 4, Framer Motion.
-- **Visuals:** Three.js (React Three Fiber) for the vibes.
-- **Intelligence:** Google Gemini AI, Xpoz API, Alpha Vantage.
+- **Framework:** Next.js 15 (Turbopack), Tailwind CSS 4, Framer Motion.
+- **Graphics:** Three.js (React Three Fiber).
+- **Intelligence Layer:** Google Gemini AI, Xpoz API, Alpha Vantage.
 - **Database:** Supabase (PostgreSQL).
-- **Deployment:** Netlify Functions (Serverless).
+- **Hosting:** Netlify Serverless Functions.
 
-## 📦 getting started
+## 📦 Getting Started
 
-1. **Clone the alpha:**
+1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/stock-tracker.git
+   git clone https://github.com/Royverse/not-financial-advice.git
    ```
 
-2. **Fuel up:**
+2. **Install dependencies:**
    ```bash
    npm install
    ```
 
-3. **Secure the secrets:**
-   Create a `.env.local`:
+3. **Configure Environment Variables:**
+   Create a `.env.local` with the following:
    ```env
    NEXT_PUBLIC_SUPABASE_URL=...
    NEXT_PUBLIC_SUPABASE_ANON_KEY=...
@@ -46,14 +47,14 @@ stop doomscrolling. let the bot do the heavy lifting.
    XPOZ_API_KEY=...
    ```
 
-4. **Launch:**
+4. **Launch Development Server:**
    ```bash
    npm run dev
    ```
 
-## ⚖️ disclaimer
+## ⚖️ Disclaimer
 
-**this is not financial advice.** we provide data-driven insights and AI analysis, but the market is a wild place. always do your own research (DYOR). 
+**not financial advice.** This platform provide data-driven insights and AI-assisted analysis for educational and research purposes. All market operations involve risk. Perform your own research (DYOR).
 
 ---
-*institutional-grade vibes only. ✨*
+*Objective analysis for the modern market.*

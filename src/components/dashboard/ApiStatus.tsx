@@ -26,7 +26,7 @@ export default function ApiStatus() {
     };
 
     return (
-        <div className="flex flex-col md:flex-row items-center gap-3 md:gap-4 bg-foreground/5 border border-foreground/10 rounded-2xl p-3 md:p-4 backdrop-blur-xl w-full md:w-auto shadow-sm">
+        <div className="flex flex-col md:flex-row items-center gap-3 md:gap-4 glass-card p-3 md:p-4 w-full md:w-auto shadow-none border-foreground/10">
             <div className="flex items-center gap-2 pr-0 md:pr-4 border-b md:border-b-0 md:border-r border-foreground/10 pb-2 md:pb-0 w-full md:w-auto justify-center md:justify-start">
                 <Cpu className="h-4 w-4 md:h-5 md:w-5 text-solarized-violet" />
                 <span className="text-xs md:text-sm font-black tracking-widest text-foreground/40 uppercase">System Status</span>

@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from './supabase';
 import { AlphaVantageService } from './alpha-vantage';
 
 export class MetricsService {
@@ -7,10 +7,7 @@ export class MetricsService {
 
     constructor() {
         this.av = new AlphaVantageService();
-        this.supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-        );
+        this.supabase = supabase;
     }
 
     /**
