@@ -1,8 +1,8 @@
-import Dashboard from "@/components/Dashboard";
+import Dashboard from "@/components/dashboard/Dashboard";
 
 export default function Home() {
   return (
-    <div className="h-screen w-full overflow-hidden relative selection:bg-indigo-500/30">
+    <div className="min-h-screen lg:h-screen w-full overflow-y-auto lg:overflow-hidden relative selection:bg-indigo-500/30">
       {/* Background Blobs for specific Twilight Aesthetic */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse-slow" />

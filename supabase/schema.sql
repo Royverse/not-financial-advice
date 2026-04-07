@@ -43,6 +43,11 @@ create table public.analyzed_opportunities (
   conviction_score int, -- 0-100 derived from the weighted algorithm
   ai_summary text, -- The "Senior Quant" qualitative take
   
+  -- Trading Targets (Phase 3)
+  take_profit numeric,
+  stop_loss numeric,
+  risk_reward_ratio numeric,
+  
   -- Status
   is_watchlisted boolean default false, -- If true, added to main dashboard
   created_at timestamptz default now()

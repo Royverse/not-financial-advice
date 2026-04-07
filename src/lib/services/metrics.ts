@@ -1,10 +1,16 @@
+import { createClient } from '@supabase/supabase-js';
 import { AlphaVantageService } from './alpha-vantage';
 
 export class MetricsService {
     private av: AlphaVantageService;
+    private supabase: any;
 
     constructor() {
         this.av = new AlphaVantageService();
+        this.supabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+        );
     }
 
     /**
@@ -54,6 +60,13 @@ export class MetricsService {
      */
     async calculateFloatRotation(ticker: string, dailyVol: number): Promise<number> {
         try {
+            // Check implicit cache first
+            const cachedFloat = await this.getCachedFloat(ticker);
+            if (cachedFloat && cachedFloat > 0) {
+                console.log(`[Metrics Cache] Hit for ${ticker} float: ${cachedFloat}`);
+                return parseFloat((dailyVol / cachedFloat).toFixed(2));
+            }
+
             const data = await this.av.getCompanyOverview(ticker);
 
             if (!data.SharesFloat || data.SharesFloat === '0' || data.SharesFloat === 'None') {
@@ -103,5 +116,38 @@ export class MetricsService {
         } catch (e) {
             return 0;
         }
+    }
+
+    /**
+     * Infer the float from previous deep dives to save API calls
+     */
+    async getCachedFloat(ticker: string): Promise<number | null> {
+        try {
+            // Find the most recent deep dive for this ticker
+            const { data: opps } = await this.supabase
+                .from('analyzed_opportunities')
+                .select('scan_id, float_rotation')
+                .eq('ticker', ticker)
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (opps && opps.length > 0 && opps[0].float_rotation > 0) {
+                // Find the volume from ticker_candidates
+                const { data: cands } = await this.supabase
+                    .from('ticker_candidates')
+                    .select('volume')
+                    .eq('scan_id', opps[0].scan_id)
+                    .eq('ticker', ticker)
+                    .limit(1);
+
+                if (cands && cands.length > 0 && cands[0].volume > 0) {
+                    const float = cands[0].volume / opps[0].float_rotation;
+                    return Math.round(float);
+                }
+            }
+        } catch (e) {
+            console.error("Cache check failed", e);
+        }
+        return null;
     }
 }

@@ -1,6 +1,90 @@
 [build]
-  command = "npm run build"
-  publish = ".next"
+  command = "echo 'Build skipped (using local artifacts)'"
+  publish = "out"
 
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
+[functions]
+  directory = "netlify/functions-dist"
+  node_bundler = "esbuild"
+
+# Explicit redirects for flattened functions
+
+[[redirects]]
+  from = "/api/cron/select-tickers"
+  to = "/.netlify/functions/api-cron-select-tickers"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/cron/validate-outcomes"
+  to = "/.netlify/functions/api-cron-validate-outcomes"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/history/scan-details"
+  to = "/.netlify/functions/api-history-scan-details"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/history/scans"
+  to = "/.netlify/functions/api-history-scans"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/export"
+  to = "/.netlify/functions/api-export"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/alpha-vantage"
+  to = "/.netlify/functions/api-alpha-vantage"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/gemini"
+  to = "/.netlify/functions/api-gemini"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/health"
+  to = "/.netlify/functions/api-health"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/history"
+  to = "/.netlify/functions/api-history"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/recommendations"
+  to = "/.netlify/functions/api-recommendations"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/xpoz"
+  to = "/.netlify/functions/api-xpoz"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/paper-portfolio"
+  to = "/.netlify/functions/api-paper-portfolio"
+  status = 200
+  force = true
+
+# Catch-all for any other API calls to map to flattened structure if they follow convention
+# This is tricky with flattened names, so explicit is better. 
+# But just in case:
+# [[redirects]]
+#   from = "/api/*"
+#   to = "/.netlify/functions/api-:splat"
+#   status = 200
+#   force = true
