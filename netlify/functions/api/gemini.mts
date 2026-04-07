@@ -15,8 +15,17 @@ export default async (req: Request) => {
         sentiment = body.sentiment;
         data = body.data;
 
+        console.log(`[Gemini Pipeline] Processing ticker: ${tickerString}`);
+
         if (!tickerString || !data) {
+            console.error('[Gemini Pipeline] Missing ticker or price data in request body');
             return Response.json({ error: 'Ticker and data are required' }, { status: 400 });
+        }
+
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
+            console.error('[Gemini Pipeline] FATAL: GEMINI_API_KEY is not defined in the environment.');
+            throw new Error('CONFIG_ERROR: GEMINI_API_KEY missing');
         }
 
         // Simplify data for the prompt to avoid token limits
@@ -114,11 +123,17 @@ Format the response in JSON with these keys:
         return Response.json({ ...analysis, debug_prompt: displayPrompt, used_model: usedModel });
 
     } catch (error: any) {
-        console.error('Gemini API Error:', error.response?.data || error.message);
+        const errorMsg = error.response?.data?.error?.message || error.message || 'Unknown Error';
+        console.error(`[Gemini Pipeline] Error during execution: ${errorMsg}`);
+        
+        if (error.response) {
+            console.error(`[Gemini Pipeline] Status: ${error.response.status}`);
+            console.error(`[Gemini Pipeline] Data:`, JSON.stringify(error.response.data));
+        }
 
         // Fallback Mock Response
         const mockAnalysis = {
-            trend: `(Mock) The stock ${tickerString} has shown volatility over the last 30 days. This is a fallback response as the AI API is currently rate-limited or unavailable.`,
+            trend: `(Mock) The stock ${tickerString} analysis failed. Error: ${errorMsg}. This fallback is active because the AI service returned an error.`,
             support_resistance: "Support at recent lows, Resistance at recent highs.",
             projection: "Projected to trade sideways with a bullish bias if market conditions improve.",
             recommendation: "Hold",
@@ -126,6 +141,7 @@ Format the response in JSON with these keys:
             price_range_low: 100,
             price_range_high: 110,
             debug_prompt: `<<<ERROR: API Call Failed>>>
+Error Details: ${errorMsg}
 
 Attempted Prompt (Senior Quant Mode): ...`
         };

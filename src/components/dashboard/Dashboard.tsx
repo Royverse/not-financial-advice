@@ -105,7 +105,7 @@ export default function Dashboard() {
                 {view === "live" && (
                     <div className="h-full grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-y-auto lg:overflow-hidden pb-20 lg:pb-0">
                         {/* Left Panel: Search & Analysis */}
-                        <div className="lg:col-span-4 flex flex-col gap-6 h-full overflow-y-auto pr-2 custom-scrollbar">
+                        <div className="lg:col-span-4 flex flex-col gap-6 h-full overflow-y-auto overflow-x-visible pr-2 custom-scrollbar">
                             {/* Search Box */}
                             <motion.form
                                 layout

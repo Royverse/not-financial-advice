@@ -2,8 +2,9 @@
 
 import { AIAnalysis as AIAnalysisType } from "@/types";
 import { motion } from "framer-motion";
-import { TrendingUp, Activity, Target, ShieldCheck, AlertCircle } from "lucide-react";
+import { TrendingUp, Activity, Target, ShieldCheck, AlertCircle, HelpCircle } from "lucide-react";
 import PromptViewer from "./PromptViewer";
+import Tooltip from "@/components/ui/Tooltip";
 
 interface AIAnalysisProps {
     analysis: AIAnalysisType | any;
@@ -55,11 +56,16 @@ export default function AIAnalysis({ analysis }: AIAnalysisProps) {
                         'border-l-solarized-yellow/40 bg-solarized-yellow/5'}
             `}>
                 <div className="flex justify-between items-start relative z-10">
-                    <div>
-                        <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/40 mb-1">Verdict</h3>
-                        <p className={`text-4xl font-black tracking-tighter
-                            ${analysis.recommendation === 'Buy' ? 'text-solarized-green' :
-                                analysis.recommendation === 'Sell' ? 'text-solarized-red' :
+                    <div className="relative group">
+                        <div className="flex items-center gap-1.5 mb-1 group-hover:text-foreground/60 transition-colors">
+                            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/40">Verdict</h3>
+                            <Tooltip content="The final AI recommendation based on price history and social sentiment.">
+                                <HelpCircle className="h-3 w-3 text-foreground/20 cursor-help" />
+                            </Tooltip>
+                        </div>
+                        <p className={`text-4xl font-black tracking-tighter transition-all
+                            ${analysis.recommendation === 'Buy' ? 'text-solarized-green drop-shadow-[0_0_15px_rgba(133,153,0,0.3)]' :
+                                analysis.recommendation === 'Sell' ? 'text-solarized-red drop-shadow-[0_0_15px_rgba(220,50,47,0.3)]' :
                                     'text-solarized-yellow'}
                         `}>
                             {analysis.recommendation}
@@ -68,7 +74,12 @@ export default function AIAnalysis({ analysis }: AIAnalysisProps) {
 
                     {analysis.conviction_score && (
                         <div className="text-right">
-                            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/40 mb-1">Conviction</h3>
+                            <div className="flex items-center gap-1.5 justify-end mb-1">
+                                <Tooltip content="The AI's level of certainty in this recommendation (1-10 scale).">
+                                    <HelpCircle className="h-3 w-3 text-foreground/20 cursor-help" />
+                                </Tooltip>
+                                <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/40">Conviction</h3>
+                            </div>
                             <div className="flex items-center gap-2 justify-end">
                                 <span className="text-3xl font-black text-foreground">{analysis.conviction_score}</span>
                                 <span className="text-lg text-foreground/40 font-medium">/10</span>
@@ -90,15 +101,30 @@ export default function AIAnalysis({ analysis }: AIAnalysisProps) {
                 {analysis.take_profit && analysis.stop_loss && (
                     <div className="mt-4 grid grid-cols-3 gap-2">
                          <div className="bg-solarized-green/10 p-3 rounded-lg border border-solarized-green/20">
-                              <div className="text-[10px] text-solarized-green font-bold uppercase tracking-widest mb-1 opacity-70">Take Profit</div>
+                              <div className="flex items-center gap-1 mb-1">
+                                  <div className="text-[10px] text-solarized-green font-bold uppercase tracking-widest opacity-70">Take Profit</div>
+                                  <Tooltip content="The target price where you should lock in gains.">
+                                      <HelpCircle className="h-2.5 w-2.5 text-solarized-green/30 cursor-help" />
+                                  </Tooltip>
+                              </div>
                               <div className="text-lg md:text-xl font-mono text-solarized-green font-bold">{fmt(analysis.take_profit)}</div>
                          </div>
                          <div className="bg-solarized-red/10 p-3 rounded-lg border border-solarized-red/20">
-                              <div className="text-[10px] text-solarized-red font-bold uppercase tracking-widest mb-1 opacity-70">Stop Loss</div>
+                              <div className="flex items-center gap-1 mb-1">
+                                  <div className="text-[10px] text-solarized-red font-bold uppercase tracking-widest opacity-70">Stop Loss</div>
+                                  <Tooltip content="The exit price to minimize losses if the trade goes against you.">
+                                      <HelpCircle className="h-2.5 w-2.5 text-solarized-red/30 cursor-help" />
+                                  </Tooltip>
+                              </div>
                               <div className="text-lg md:text-xl font-mono text-solarized-red font-bold">{fmt(analysis.stop_loss)}</div>
                          </div>
                          <div className="bg-foreground/5 p-3 rounded-lg border border-foreground/10">
-                              <div className="text-[10px] text-foreground/40 font-bold uppercase tracking-widest mb-1">Risk/Reward</div>
+                              <div className="flex items-center gap-1 mb-1">
+                                  <div className="text-[10px] text-foreground/40 font-bold uppercase tracking-widest">Risk/Reward</div>
+                                  <Tooltip content="The ratio of potential profit vs potential loss. 3.0x+ is preferred.">
+                                      <HelpCircle className="h-2.5 w-2.5 text-foreground/20 cursor-help" />
+                                  </Tooltip>
+                              </div>
                               <div className="text-lg md:text-xl font-mono text-foreground/80 font-bold">{analysis.risk_reward_ratio != null ? `${Number(analysis.risk_reward_ratio).toFixed(2)}x` : "N/A"}</div>
                          </div>
                     </div>

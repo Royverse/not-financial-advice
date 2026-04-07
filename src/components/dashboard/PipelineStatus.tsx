@@ -77,12 +77,13 @@ export default function PipelineStatus({ steps, isVisible }: PipelineStatusProps
 
     return (
         <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="glass-card p-5 space-y-4 shadow-none"
+            layout
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="glass-card p-5 space-y-4 shadow-none overflow-hidden min-h-fit"
         >
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between pointer-events-none">
                 <h3 className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] flex items-center gap-2">
                     <Wifi className="h-4 w-4 text-solarized-violet" />
                     Analysis Pipeline
@@ -92,17 +93,19 @@ export default function PipelineStatus({ steps, isVisible }: PipelineStatusProps
                 </span>
             </div>
 
-            <div className="space-y-2">
-                <AnimatePresence>
+            <div className="flex flex-col gap-2 relative">
+                <AnimatePresence mode="popLayout">
                     {steps.map((step, idx) => {
                         const Icon = stepIcons[step.id] || Database;
                         return (
                             <motion.div
                                 key={step.id}
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: idx * 0.1 }}
-                                className={`flex-shrink-0 flex items-center gap-4 p-4 rounded-2xl border transition-all ${getStatusColor(step.status)} shadow-sm`}
+                                layout
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                transition={{ delay: idx * 0.05 }}
+                                className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${getStatusColor(step.status)} shadow-sm min-h-[72px]`}
                             >
                                 <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-foreground/5 border border-foreground/5">
                                     <Icon className="h-5 w-5 text-foreground/40" />

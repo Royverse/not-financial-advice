@@ -169,7 +169,7 @@ export function useStockData() {
             updateStep('gemini', {
                 status: isMockResponse ? 'mock' : 'success',
                 message: isMockResponse
-                    ? 'Using fallback response (API quota exceeded)'
+                    ? `AI Fallback: ${geminiRes.data.trend.split('Error: ')[1]?.split('.')[0] || 'API Issue'}`
                     : `Analysis complete: ${geminiRes.data.recommendation} (Conviction: ${geminiRes.data.conviction_score}/10)`,
                 duration: geminiDuration
             });

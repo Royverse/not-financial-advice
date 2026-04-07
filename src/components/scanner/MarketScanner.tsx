@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
-import { Radar, List, CheckCircle2, XCircle, Clock, Activity, Target, TrendingDown, AlertTriangle } from "lucide-react";
+import { Radar, List, CheckCircle2, XCircle, Clock, Activity, Target, TrendingDown, AlertTriangle, HelpCircle } from "lucide-react";
+import Tooltip from "@/components/ui/Tooltip";
 
 interface ScanLog {
     id: string;
@@ -198,16 +199,31 @@ export default function MarketScanner() {
                                         )}
 
                                         <div className="grid grid-cols-3 gap-2 mb-4">
-                                            <div className="bg-foreground/5 p-2 rounded-lg text-center border border-foreground/10">
-                                                <div className="text-[10px] text-foreground/40 uppercase font-bold">RVOL</div>
+                                            <div className="bg-foreground/5 p-2 rounded-lg text-center border border-foreground/10 group/item transition-colors hover:border-solarized-violet/30">
+                                                <div className="flex items-center justify-center gap-1 mb-1">
+                                                    <div className="text-[10px] text-foreground/40 uppercase font-bold">RVOL</div>
+                                                    <Tooltip content="Relative Volume: Current volume vs 90-day average. >2.0x indicates unusual interest.">
+                                                        <HelpCircle className="h-2.5 w-2.5 text-foreground/20 cursor-help" />
+                                                    </Tooltip>
+                                                </div>
                                                 <div className="text-sm font-black text-solarized-violet">{op.rvol}x</div>
                                             </div>
-                                            <div className="bg-foreground/5 p-2 rounded-lg text-center border border-foreground/10">
-                                                <div className="text-[10px] text-foreground/40 uppercase font-bold">Float</div>
+                                            <div className="bg-foreground/5 p-2 rounded-lg text-center border border-foreground/10 group/item transition-colors hover:border-solarized-blue/30">
+                                                <div className="flex items-center justify-center gap-1 mb-1">
+                                                    <div className="text-[10px] text-foreground/40 uppercase font-bold">Float</div>
+                                                    <Tooltip content="Float Rotation: The percentage of tradable shares that have changed hands today.">
+                                                        <HelpCircle className="h-2.5 w-2.5 text-foreground/20 cursor-help" />
+                                                    </Tooltip>
+                                                </div>
                                                 <div className="text-sm font-black text-solarized-blue">{op.float_rotation}%</div>
                                             </div>
-                                            <div className="bg-foreground/5 p-2 rounded-lg text-center border border-foreground/10">
-                                                <div className="text-[10px] text-foreground/40 uppercase font-bold">Sent. V</div>
+                                            <div className="bg-foreground/5 p-2 rounded-lg text-center border border-foreground/10 group/item transition-colors hover:border-solarized-magenta/30">
+                                                <div className="flex items-center justify-center gap-1 mb-1">
+                                                    <div className="text-[10px] text-foreground/40 uppercase font-bold">Sent. V</div>
+                                                    <Tooltip content="Sentiment Velocity: How fast positive/negative social sentiment is spreading.">
+                                                        <HelpCircle className="h-2.5 w-2.5 text-foreground/20 cursor-help" />
+                                                    </Tooltip>
+                                                </div>
                                                 <div className="text-sm font-black text-solarized-magenta">{op.sentiment_velocity}</div>
                                             </div>
                                         </div>
