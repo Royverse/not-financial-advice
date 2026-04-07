@@ -1,5 +1,5 @@
 [build]
-  command = "echo 'Build skipped (using local artifacts)'"
+  command = "npm run build"
   publish = "out"
 
 [functions]
