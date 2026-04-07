@@ -102,7 +102,7 @@ export default function PipelineStatus({ steps, isVisible }: PipelineStatusProps
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: idx * 0.1 }}
-                                className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${getStatusColor(step.status)} shadow-sm`}
+                                className={`flex-shrink-0 flex items-center gap-4 p-4 rounded-2xl border transition-all ${getStatusColor(step.status)} shadow-sm`}
                             >
                                 <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-foreground/5 border border-foreground/5">
                                     <Icon className="h-5 w-5 text-foreground/40" />

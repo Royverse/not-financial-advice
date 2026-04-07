@@ -125,9 +125,9 @@ export default function Dashboard() {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="px-6 py-3 bg-solarized-blue hover:bg-solarized-blue/80 text-white rounded-xl font-bold transition disabled:opacity-50 shadow-lg shadow-solarized-blue/20"
+                                    className="px-6 py-3 bg-solarized-blue/10 text-solarized-blue border border-solarized-blue/30 hover:bg-solarized-blue/20 rounded-xl font-bold transition disabled:opacity-50 shadow-sm shadow-solarized-blue/10"
                                 >
-                                    {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : "VIBE CHECK"}
+                                    {loading ? <div className="w-5 h-5 border-2 border-solarized-blue/30 border-t-solarized-blue rounded-full animate-spin" /> : "VIBE CHECK"}
                                 </button>
                             </motion.form>
 
