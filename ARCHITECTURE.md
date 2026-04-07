@@ -1,103 +1,135 @@
-# StockNova 2.0 Architecture
+# 🏗️ StockTracker: Institutional-Grade Vibes Only
 
-This document provides visual diagrams of the StockNova trading intelligence platform.
+Welcome to the internal blueprints for the **StockTracker** platform. This is where the sauce is documented. No cap, just alpha.
 
-## System Overview
+## 🌌 System Overview
+
+The application follows a modular, serverless architecture optimized for data-velocity and high-touch vibes.
 
 ```mermaid
 graph TD
     %% Styling
-    classDef external fill:#2d3748,stroke:#4a5568,stroke-width:2px,color:#fff
-    classDef core fill:#2c5282,stroke:#4299e1,stroke-width:2px,color:#fff
-    classDef ui fill:#276749,stroke:#48bb78,stroke-width:2px,color:#fff
-    classDef database fill:#744210,stroke:#ed8936,stroke-width:2px,color:#fff
-    classDef engine fill:#44337a,stroke:#9f7aea,stroke-width:2px,color:#fff
+    classDef external fill:#f9f9f9,stroke:#93a1a1,stroke-width:2px,color:#657b83
+    classDef core fill:#eee8d5,stroke:#586e75,stroke-width:2px,color:#586e75
+    classDef ui fill:#d33682,stroke:#d33682,stroke-width:2px,color:#fff
+    classDef database fill:#268bd2,stroke:#268bd2,stroke-width:2px,color:#fff
+    classDef engine fill:#6c71c4,stroke:#6c71c4,stroke-width:2px,color:#fff
 
-    subgraph External["🌐 External APIs"]
-        AV[Alpha Vantage<br/>Market Data]:::external
-        XP[Xpoz<br/>Social Sentiment]:::external
-        GM[Gemini AI<br/>Analysis Engine]:::external
+    subgraph External["🌐 Alpha Sources"]
+        AV[Alpha Vantage<br/>Market Intel]:::external
+        XP[Xpoz<br/>Sentiment Pulse]:::external
+        GM[Gemini AI<br/>Executive Brain]:::external
     end
 
-    subgraph Core["⚡ StockNova Core"]
+    subgraph Core["⚡ The Engine (src/lib)"]
         direction TB
-        CRON[Cron Scheduler<br/>3x Daily]:::core
         SCAN[Scanner Service]:::core
+        METRICS[Metrics Engine]:::core
         
-        subgraph Engines["🧠 3-Engine Analysis"]
-            E1[RVOL Engine]:::engine
-            E2[Float Rotation]:::engine
-            E3[Sentiment Velocity]:::engine
+        subgraph Analysis["🧠 Analysis Cluster"]
+            E1[RVOL Analysis]:::engine
+            E2[Float Monitoring]:::engine
+            E3[Social Velocity]:::engine
         end
         
-        DB[(Supabase<br/>Database)]:::database
+        DB[(Supabase<br/>State Persistence)]:::database
     end
 
-    subgraph UI["📱 Frontend"]
-        DASH[Dashboard]:::ui
-        HEALTH[Health Monitor]:::ui
-        EXPORT[Excel Export]:::ui
+    subgraph UI["📱 The Vibe (src/app)"]
+        DASH[Dashboard Container]:::ui
+        GALLERY[Scanner Gallery]:::ui
+        PORT[Institutional Portfolio]:::ui
     end
 
-    CRON -->|Trigger| SCAN
-    SCAN -->|Top Gainers| AV
-    SCAN --> Engines
-    E1 & E2 -->|Metrics| AV
-    E3 -->|Social Data| XP
-    Engines -->|Judge| GM
-    GM -->|Conviction Score| DB
+    SCAN -->|Scan| AV
+    SCAN --> Analysis
+    Analysis -->|Metrics| AV
+    Analysis -->|Sentiment| XP
+    Analysis -->|Verdict| GM
+    GM -->|Conviction| DB
     DB --> DASH
-    HEALTH -.->|Monitor| AV & XP & GM
+    PORT -.->|Sync| DB
 ```
 
-## Data Flow Sequence
+## 📁 Codebase Structure (The Hierarchy)
+
+Visualizing exactly how the sauce is organized in the `src/` directory.
+
+```mermaid
+graph LR
+    Root[src/] --> App[app/]
+    Root --> Comp[components/]
+    Root --> Lib[lib/]
+    Root --> Hooks[hooks/]
+    Root --> Cron[cron/]
+
+    subgraph "Navigation & Styles"
+        App --> Docs[docs/]
+        App --> Globals[globals.css]
+        App --> Layout[layout.tsx]
+    end
+
+    subgraph "Feature Components"
+        Comp --> Dashboard[dashboard/]
+        Comp --> Analysis[analysis/]
+        Comp --> Scanner[scanner/]
+        Comp --> PortComp[portfolio/]
+        Comp --> UI[ui/ ✨]
+    end
+
+    subgraph "Core Business Logic"
+        Lib --> Services[services/]
+        Lib --> Gemini[gemini.ts]
+        Lib --> Supa[supabase.ts]
+        Services --> AV_Svc[alpha-vantage.ts]
+        Services --> Scan_Svc[scanner.ts]
+    end
+
+    subgraph "Automated Pipeline"
+        Cron --> Runner[runner.ts]
+    end
+```
+
+## 🌊 Data Analysis Sequence
+
+How we transform raw data into institutional-grade convictions.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant C as ⏰ Cron (3x/Day)
-    participant S as 🚀 Scanner
-    participant AV as 💹 Alpha Vantage
-    participant X as 🐦 Xpoz
-    participant AI as 🤖 Gemini
-    participant DB as 📁 Supabase
+    participant C as ⏰ Scheduled Trigger
+    participant S as 🚀 Scanner Service
+    participant AV as 💹 Market Data
+    participant X as 🐦 Social Sentiment
+    participant AI as 🧠 Gemini Brain
+    participant DB as 📁 Supabase Hub
 
-    C->>S: WAKE_UP (9:30, 12:00, 16:00)
-    S->>AV: FETCH_TOP_GAINERS
-    AV-->>S: Symbols [AAPL, TSLA, NVDA...]
+    C->>S: START_SYNC (Phase 5)
+    S->>AV: FETCH_TOP_GAINERS (Filter: Hot Only)
+    AV-->>S: Raw Payload (Ticker List)
     
-    loop Per Hot Candidate (Top 2)
-        S->>AV: FETCH_TECHNICALS (RVOL, Float)
-        S->>X: FETCH_SENTIMENT (Recent Posts)
-        S->>AI: PERFORM_ANALYSIS (Combined Data)
-        AI-->>S: RECOMMENDATION + SCORE
+    loop Per Alpha Candidate
+        S->>AV: GET_TECHNICALS (RVOL, Relative Str)
+        S->>X: GET_MOOD (Xpoz Velocity)
+        S->>AI: VIBE_CHECK (Contextual Logic)
+        AI-->>S: CONVICTION_SCORE (0-100)
     end
     
-    S->>DB: PERSIST_OPPORTUNITIES
+    S->>DB: PERSIST_ALPHA (Real-time Save)
+    Note over S,DB: 🚀 Data is now live for UI
 ```
 
-## API Limit Strategy
+## 🚥 API Health & Mock Strategy
 
-| Component | Calls/Scan | 3 Scans/Day |
-|-----------|------------|-------------|
-| Discovery | 1 | 3 |
-| Deep Dive (2 tickers × 3 calls) | 6 | 18 |
-| **Total** | **7** | **21** |
+We don't do downtime. If we hit limits, we switch to "Intraday Vibe" (Mock Data).
 
-> ✅ Fits within 25 calls/day free tier limit
+| Source | Real Data | Mock Threshold | Current Reliability |
+|--------|-----------|----------------|---------------------|
+| Alpha Vantage | ✅ Live | 25 calls/day | High (Paid Tier compatible) |
+| Xpoz | ✅ Live | Limit reached | Medium (Dynamic Poll) |
+| Gemini AI | ✅ Live | Error fallback | Elite |
 
-## Mock Mode
-
-When API limits are hit, the system automatically switches to mock data:
-
-```mermaid
-graph LR
-    classDef check fill:#2d3748,stroke:#4a5568,color:#fff
-    classDef real fill:#276749,stroke:#48bb78,color:#fff
-    classDef mock fill:#744210,stroke:#ed8936,color:#fff
-
-    API[📡 API Call]:::check --> Check{Limit Hit?}:::check
-    Check -->|No| Real[✅ Real Data]:::real
-    Check -->|Yes| Mock[🚧 Mock Data]:::mock
-    Mock --> Tag[🏷️ Tag: mock_intraday]:::mock
-```
+---
+> "Institutional-grade vibes aren't built in a day, but they are tracked in milliseconds."
+> 
+> *Version: Phase 5 (Vibe Check Alpha)*
