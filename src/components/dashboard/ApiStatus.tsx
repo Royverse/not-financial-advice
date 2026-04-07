@@ -26,28 +26,28 @@ export default function ApiStatus() {
     };
 
     return (
-        <div className="flex flex-col md:flex-row items-center gap-3 md:gap-4 glass-card p-3 md:p-4 w-full md:w-auto shadow-none border-foreground/10">
-            <div className="flex items-center gap-2 pr-0 md:pr-4 border-b md:border-b-0 md:border-r border-foreground/10 pb-2 md:pb-0 w-full md:w-auto justify-center md:justify-start">
-                <Cpu className="h-4 w-4 md:h-5 md:w-5 text-solarized-violet" />
-                <span className="text-xs md:text-sm font-black tracking-widest text-foreground/40 uppercase">System Status</span>
+        <div className="flex items-center gap-2 md:gap-4 glass-card p-2 md:p-3 w-full md:w-auto shadow-none border-foreground/10 overflow-visible">
+            <div className="flex items-center gap-2 pr-2 md:pr-4 border-r border-foreground/10 h-full py-1">
+                <Cpu className="h-4 w-4 text-solarized-violet" />
+                <span className="hidden lg:inline text-[10px] font-black tracking-widest text-foreground/40 uppercase whitespace-nowrap">Core</span>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3">
+            <div className="flex items-center gap-1.5 md:gap-2 overflow-visible">
                 {health?.services && Object.entries(health.services).map(([name, data]) => (
                     <motion.div
                         key={name}
                         whileHover={{ scale: 1.05 }}
-                        className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-5 py-1.5 md:py-2.5 rounded-xl border ${getStatusColor(data.status)} transition-all cursor-help relative group shadow-sm`}
+                        className={`flex items-center gap-1.5 px-2 md:px-3 py-1 md:py-1.5 rounded-lg border ${getStatusColor(data.status)} transition-all cursor-help relative group shadow-sm`}
                     >
                         {getStatusIcon(data.status)}
-                        <span className="text-[10px] md:text-xs font-black uppercase tracking-widest">
-                            {name === 'alpha_vantage' ? 'Market' : name === 'xpoz' ? 'Social' : name === 'cron_job' ? 'Cron' : name}
+                        <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">
+                            {name === 'alpha_vantage' ? 'Mkt' : name === 'xpoz' ? 'Soc' : name === 'cron_job' ? 'Crn' : name === 'gemini' ? 'AI' : name}
                         </span>
 
                         {/* Tooltip Popup */}
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-56 p-3 bg-secondary border border-foreground/10 rounded-2xl text-[10px] md:text-xs text-foreground/60 opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-50 text-center shadow-2xl backdrop-blur-2xl">
-                            <div className="font-bold mb-1 uppercase tracking-wider">{data.message}</div>
-                            {data.tooltip && <div className="mt-2 text-foreground/30 border-t border-foreground/5 pt-2 uppercase text-[9px] tracking-tight">{data.tooltip}</div>}
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-56 p-3 bg-secondary border border-foreground/10 rounded-2xl text-[10px] md:text-xs text-foreground group-hover:opacity-100 opacity-0 transition-all pointer-events-none z-[100] text-center shadow-2xl backdrop-blur-3xl border-solarized-blue/20">
+                            <div className="font-bold mb-1 uppercase tracking-wider text-solarized-blue">{data.message}</div>
+                            {data.tooltip && <div className="mt-2 text-foreground/50 border-t border-foreground/5 pt-2 uppercase text-[9px] tracking-tight">{data.tooltip}</div>}
                         </div>
                     </motion.div>
                 ))}
@@ -55,10 +55,10 @@ export default function ApiStatus() {
 
             <button
                 onClick={refreshHealth}
-                className="ml-0 md:ml-auto p-2.5 rounded-xl hover:bg-foreground/5 text-foreground/30 border border-transparent hover:border-foreground/10 transition shadow-sm"
+                className="ml-auto p-1.5 rounded-lg hover:bg-foreground/5 text-foreground/30 border border-transparent hover:border-foreground/10 transition shadow-sm"
                 title="Refresh Status"
             >
-                <RefreshCw className={`h-4 w-4 md:h-5 md:w-5 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
             </button>
         </div>
     );

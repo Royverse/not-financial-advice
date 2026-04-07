@@ -39,15 +39,15 @@ export default function Dashboard() {
                     </motion.h1>
                 </div>
 
-                <div className="flex flex-col md:flex-row items-center gap-4 w-full xl:w-auto">
-                    <div className="hidden md:block">
+                <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 w-full xl:w-auto lg:flex-1 lg:justify-end">
+                    <div className="hidden md:block flex-shrink-0">
                         <ApiStatus />
                     </div>
 
-                    <div className="flex glass-card p-1.5 w-full md:w-auto overflow-x-auto custom-scrollbar border-foreground/5 shadow-none backdrop-blur-md">
+                    <div className="flex glass-card p-1 w-full md:w-auto overflow-x-auto custom-scrollbar border-foreground/5 shadow-none backdrop-blur-md max-w-[calc(100vw-2rem)]">
                         <button
                             onClick={() => setView("live")}
-                            className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${view === "live"
+                            className={`flex-shrink-0 md:flex-none px-4 md:px-6 py-2 rounded-xl text-xs md:text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${view === "live"
                                 ? "bg-solarized-blue/20 text-solarized-blue border border-solarized-blue/10 shadow-sm"
                                 : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
                                 }`}
@@ -57,7 +57,7 @@ export default function Dashboard() {
                         </button>
                         <button
                             onClick={() => setView("scanner")}
-                            className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${view === "scanner"
+                            className={`flex-shrink-0 md:flex-none px-4 md:px-6 py-2 rounded-xl text-xs md:text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${view === "scanner"
                                 ? "bg-solarized-violet/20 text-solarized-violet border border-solarized-violet/10 shadow-sm"
                                 : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
                                 }`}
@@ -67,7 +67,7 @@ export default function Dashboard() {
                         </button>
                         <button
                             onClick={() => setView("history")}
-                            className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${view === "history"
+                            className={`flex-shrink-0 md:flex-none px-4 md:px-6 py-2 rounded-xl text-xs md:text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${view === "history"
                                 ? "bg-solarized-magenta/20 text-solarized-magenta border border-solarized-magenta/30 shadow-sm"
                                 : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
                                 }`}
@@ -77,7 +77,7 @@ export default function Dashboard() {
                         </button>
                         <button
                             onClick={() => setView("portfolio")}
-                            className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${view === "portfolio"
+                            className={`flex-shrink-0 md:flex-none px-4 md:px-6 py-2 rounded-xl text-xs md:text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${view === "portfolio"
                                 ? "bg-solarized-green/20 text-solarized-green border border-solarized-green/10 shadow-sm"
                                 : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
                                 }`}
@@ -87,13 +87,13 @@ export default function Dashboard() {
                         </button>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0">
                         <Link
                             href="/docs"
-                            className="p-3 glass-card hover:bg-foreground/5 border-foreground/5 text-foreground/60 hover:text-foreground transition group shadow-none"
+                            className="p-2.5 glass-card hover:bg-foreground/5 border-foreground/5 text-foreground/60 hover:text-foreground transition group shadow-none"
                             title="Technical Docs"
                         >
-                            <BookOpen className="h-5 w-5 group-hover:scale-110 transition" />
+                            <BookOpen className="h-4 w-4 md:h-5 md:w-5 group-hover:scale-110 transition" />
                         </Link>
                         <ThemeToggle />
                     </div>
@@ -127,7 +127,7 @@ export default function Dashboard() {
                                     disabled={loading}
                                     className="px-6 py-3 bg-solarized-blue hover:bg-solarized-blue/80 text-white rounded-xl font-bold transition disabled:opacity-50 shadow-lg shadow-solarized-blue/20"
                                 >
-                                    {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : "ANALYZE"}
+                                    {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : "VIBE CHECK"}
                                 </button>
                             </motion.form>
 
