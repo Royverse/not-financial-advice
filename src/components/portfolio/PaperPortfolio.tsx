@@ -36,21 +36,16 @@ interface PortfolioSummary {
     best_trade: { ticker: string; pnl_pct: number } | null;
 }
 
-const statusConfig = {
-    open: { color: "text-blue-400 bg-blue-500/10 border-blue-500/20", icon: <Clock className="h-3.5 w-3.5" />, label: "Open" },
-    closed_win: { color: "text-green-400 bg-green-500/10 border-green-500/20", icon: <CheckCircle2 className="h-3.5 w-3.5" />, label: "Win" },
-    closed_loss: { color: "text-red-400 bg-red-500/10 border-red-500/20", icon: <XCircle className="h-3.5 w-3.5" />, label: "Loss" },
-    expired: { color: "text-gray-400 bg-gray-500/10 border-gray-500/20", icon: <Minus className="h-3.5 w-3.5" />, label: "Expired" },
-};
+const ease: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 function StatCard({ label, value, sub, color = "text-white" }: {
     label: string; value: string | null; sub?: string; color?: string;
 }) {
     return (
-        <div className="glass-card p-4 rounded-2xl flex flex-col gap-1">
-            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{label}</p>
-            <p className={`text-2xl font-black font-mono ${color}`}>{value ?? "—"}</p>
-            {sub && <p className="text-xs text-gray-600 font-medium">{sub}</p>}
+        <div className="glass-card p-4 rounded-xl flex flex-col gap-1">
+            <p className="text-[9px] font-mono font-bold text-gray-600 uppercase tracking-[0.2em]">{label}</p>
+            <p className={`text-xl font-black font-mono tabular-nums ${color}`}>{value ?? "—"}</p>
+            {sub && <p className="text-[10px] text-gray-600 font-mono">{sub}</p>}
         </div>
     );
 }
@@ -81,47 +76,45 @@ export default function PaperPortfolio() {
         n != null ? `${prefix}${Number(n).toFixed(2)}` : "—";
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-5">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-emerald-500/20 rounded-xl text-emerald-400">
-                        <DollarSign className="h-5 w-5" />
-                    </div>
+                    <DollarSign className="h-4 w-4 text-gray-600" />
                     <div>
-                        <h2 className="text-xl font-bold text-gray-100">Paper Portfolio</h2>
-                        <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Simulated Trades ($1,000/position)</p>
+                        <h2 className="text-sm font-bold text-gray-200 tracking-tight">Paper Portfolio</h2>
+                        <p className="text-[9px] font-mono text-gray-600 uppercase tracking-[0.15em]">Simulated · $1,000/position</p>
                     </div>
                 </div>
                 <button
                     onClick={fetchPortfolio}
                     disabled={loading}
-                    className="p-2 bg-white/5 hover:bg-white/10 text-gray-400 border border-white/10 rounded-xl transition"
+                    className="p-2 bg-white/[0.03] hover:bg-white/[0.05] text-gray-500 border border-white/[0.06] rounded-lg transition"
                 >
-                    <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+                    <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
                 </button>
             </div>
 
-            {/* Stats Bar */}
+            {/* Stats */}
             {summary && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <StatCard
                         label="Total Return"
                         value={summary.total_return_pct != null ? `${summary.total_return_pct}%` : null}
-                        color={parseFloat(summary.total_return_pct ?? "0") >= 0 ? "text-green-400" : "text-red-400"}
+                        color={parseFloat(summary.total_return_pct ?? "0") >= 0 ? "text-emerald-400" : "text-red-400"}
                         sub={`P&L: $${summary.total_pnl_dollars ?? "0.00"}`}
                     />
                     <StatCard
                         label="Win Rate"
                         value={summary.win_rate_pct != null ? `${summary.win_rate_pct}%` : null}
                         sub={`${summary.wins}W / ${summary.losses}L`}
-                        color="text-purple-400"
+                        color="text-indigo-300"
                     />
                     <StatCard
-                        label="Open Positions"
+                        label="Open"
                         value={String(summary.open_positions)}
-                        sub={`${summary.total_trades} total trades`}
-                        color="text-blue-400"
+                        sub={`${summary.total_trades} total`}
+                        color="text-gray-200"
                     />
                     <StatCard
                         label="Best Trade"
@@ -135,36 +128,37 @@ export default function PaperPortfolio() {
             {/* Open Positions */}
             {openTrades.length > 0 && (
                 <div className="space-y-3">
-                    <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                        <BarChart2 className="h-4 w-4 text-blue-400" /> Open Positions
+                    <h3 className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-[0.15em] flex items-center gap-1.5">
+                        <BarChart2 className="h-3.5 w-3.5 text-indigo-500/40" /> Open Positions
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {openTrades.map(trade => (
                             <motion.div
                                 key={trade.id}
-                                initial={{ opacity: 0, y: 8 }}
+                                initial={{ opacity: 0, y: 6 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="glass-card p-4 rounded-2xl border-l-4 border-l-blue-400"
+                                transition={{ duration: 0.3, ease }}
+                                className="glass-card p-4 rounded-xl border-l-2 border-l-indigo-500/40"
                             >
                                 <div className="flex justify-between items-center mb-3">
-                                    <span className="font-black text-lg text-gray-100">{trade.ticker}</span>
-                                    <span className="text-[10px] px-2 py-1 rounded-full border text-blue-400 bg-blue-500/10 border-blue-500/20 font-bold uppercase">Open</span>
+                                    <span className="font-black text-base text-gray-200 font-mono">{trade.ticker}</span>
+                                    <span className="text-[9px] px-2 py-0.5 rounded font-mono font-bold text-indigo-400/70 bg-indigo-500/[0.08] border border-indigo-500/10 uppercase tracking-wider">Open</span>
                                 </div>
-                                <div className="grid grid-cols-3 gap-2 text-center">
-                                    <div className="bg-black/20 p-2 rounded-lg border border-white/5">
-                                        <p className="text-[10px] text-gray-500 uppercase font-bold">Entry</p>
-                                        <p className="text-sm font-mono font-bold text-gray-300">{fmt(trade.entry_price)}</p>
+                                <div className="grid grid-cols-3 gap-1.5 text-center">
+                                    <div className="bg-white/[0.02] p-2 rounded-lg border border-white/[0.03]">
+                                        <p className="text-[8px] text-gray-600 uppercase font-mono font-bold tracking-wider">Entry</p>
+                                        <p className="text-xs font-mono font-bold text-gray-300 tabular-nums">{fmt(trade.entry_price)}</p>
                                     </div>
-                                    <div className="bg-green-500/10 p-2 rounded-lg border border-green-500/20">
-                                        <p className="text-[10px] text-green-500/70 uppercase font-bold">TP</p>
-                                        <p className="text-sm font-mono font-bold text-green-400">{fmt(trade.take_profit)}</p>
+                                    <div className="bg-emerald-500/[0.04] p-2 rounded-lg border border-emerald-500/10">
+                                        <p className="text-[8px] text-emerald-500/50 uppercase font-mono font-bold tracking-wider">TP</p>
+                                        <p className="text-xs font-mono font-bold text-emerald-400 tabular-nums">{fmt(trade.take_profit)}</p>
                                     </div>
-                                    <div className="bg-red-500/10 p-2 rounded-lg border border-red-500/20">
-                                        <p className="text-[10px] text-red-500/70 uppercase font-bold">SL</p>
-                                        <p className="text-sm font-mono font-bold text-red-400">{fmt(trade.stop_loss)}</p>
+                                    <div className="bg-red-500/[0.04] p-2 rounded-lg border border-red-500/10">
+                                        <p className="text-[8px] text-red-500/50 uppercase font-mono font-bold tracking-wider">SL</p>
+                                        <p className="text-xs font-mono font-bold text-red-400 tabular-nums">{fmt(trade.stop_loss)}</p>
                                     </div>
                                 </div>
-                                <p className="text-[10px] text-gray-600 mt-2 font-mono">{trade.shares_held.toFixed(4)} shares @ {fmt(trade.notional_value)} notional</p>
+                                <p className="text-[9px] text-gray-600 mt-2 font-mono tabular-nums">{trade.shares_held.toFixed(4)} shares @ {fmt(trade.notional_value)} notional</p>
                             </motion.div>
                         ))}
                     </div>
@@ -173,45 +167,47 @@ export default function PaperPortfolio() {
 
             {/* Closed Trades */}
             <div className="space-y-3">
-                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                    {closedTrades.some(t => t.status === 'closed_win') ? <TrendingUp className="h-4 w-4 text-green-400" /> : <TrendingDown className="h-4 w-4 text-red-400" />}
-                    Closed Trades
+                <h3 className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-[0.15em] flex items-center gap-1.5">
+                    <TrendingDown className="h-3.5 w-3.5 text-gray-600" /> Closed Trades
                 </h3>
                 {closedTrades.length === 0 && !loading && (
-                    <div className="p-8 bg-white/5 border border-dashed border-white/10 rounded-2xl text-center text-gray-500 font-medium">
-                        No closed trades yet. Buy signals will auto-paper-trade at $1,000 per position.
+                    <div className="p-8 bg-white/[0.02] border border-dashed border-white/[0.06] rounded-xl text-center text-gray-600 font-mono text-xs">
+                        No closed trades yet. Buy signals auto-paper-trade at $1,000/position.
                     </div>
                 )}
-                <div className="hidden md:block overflow-auto rounded-2xl border border-white/10 bg-black/20">
-                    <table className="w-full text-sm text-left">
-                        <thead className="text-xs uppercase bg-white/5 text-gray-500 sticky top-0 font-bold border-b border-white/10">
+                <div className="hidden md:block overflow-auto rounded-xl border border-white/[0.04] bg-white/[0.01]">
+                    <table className="w-full text-xs text-left">
+                        <thead className="text-[9px] uppercase bg-white/[0.02] text-gray-600 font-mono sticky top-0 font-bold border-b border-white/[0.04] tracking-[0.15em]">
                             <tr>
-                                <th className="px-4 py-3">Ticker</th>
-                                <th className="px-4 py-3">Status</th>
-                                <th className="px-4 py-3 text-right">Entry</th>
-                                <th className="px-4 py-3 text-right">Exit</th>
-                                <th className="px-4 py-3 text-right">P&L $</th>
-                                <th className="px-4 py-3 text-right">P&L %</th>
+                                <th className="px-4 py-2.5">Ticker</th>
+                                <th className="px-4 py-2.5">Status</th>
+                                <th className="px-4 py-2.5 text-right">Entry</th>
+                                <th className="px-4 py-2.5 text-right">Exit</th>
+                                <th className="px-4 py-2.5 text-right">P&L $</th>
+                                <th className="px-4 py-2.5 text-right">P&L %</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5">
+                        <tbody className="divide-y divide-white/[0.03]">
                             {closedTrades.map(trade => {
-                                const cfg = statusConfig[trade.status] ?? statusConfig.expired;
                                 const pnlPositive = (trade.pnl_dollars ?? 0) >= 0;
                                 return (
-                                    <tr key={trade.id} className="hover:bg-white/5 transition">
-                                        <td className="px-4 py-3 font-black text-gray-200">{trade.ticker}</td>
-                                        <td className="px-4 py-3">
-                                            <span className={`flex items-center gap-1 w-fit px-2 py-0.5 rounded-full text-[10px] font-bold border ${cfg.color}`}>
-                                                {cfg.icon} {cfg.label}
+                                    <tr key={trade.id} className="hover:bg-white/[0.02] transition">
+                                        <td className="px-4 py-2.5 font-black text-gray-300 font-mono">{trade.ticker}</td>
+                                        <td className="px-4 py-2.5">
+                                            <span className={`flex items-center gap-1 w-fit px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${
+                                                trade.status === 'closed_win' ? 'text-emerald-400/70 bg-emerald-500/[0.06]' :
+                                                trade.status === 'closed_loss' ? 'text-red-400/70 bg-red-500/[0.06]' :
+                                                'text-gray-500 bg-white/[0.03]'
+                                            }`}>
+                                                {trade.status === 'closed_win' ? 'WIN' : trade.status === 'closed_loss' ? 'LOSS' : 'EXP'}
                                             </span>
                                         </td>
-                                        <td className="px-4 py-3 text-right font-mono text-gray-400">{fmt(trade.entry_price)}</td>
-                                        <td className="px-4 py-3 text-right font-mono text-gray-300">{fmt(trade.exit_price)}</td>
-                                        <td className={`px-4 py-3 text-right font-mono font-bold ${pnlPositive ? "text-green-400" : "text-red-400"}`}>
+                                        <td className="px-4 py-2.5 text-right font-mono text-gray-500 tabular-nums">{fmt(trade.entry_price)}</td>
+                                        <td className="px-4 py-2.5 text-right font-mono text-gray-400 tabular-nums">{fmt(trade.exit_price)}</td>
+                                        <td className={`px-4 py-2.5 text-right font-mono font-bold tabular-nums ${pnlPositive ? "text-emerald-400" : "text-red-400"}`}>
                                             {trade.pnl_dollars != null ? `${pnlPositive ? "+" : ""}$${Number(trade.pnl_dollars).toFixed(2)}` : "—"}
                                         </td>
-                                        <td className={`px-4 py-3 text-right font-mono font-bold ${pnlPositive ? "text-green-400" : "text-red-400"}`}>
+                                        <td className={`px-4 py-2.5 text-right font-mono font-bold tabular-nums ${pnlPositive ? "text-emerald-400" : "text-red-400"}`}>
                                             {trade.pnl_percent != null ? `${pnlPositive ? "+" : ""}${Number(trade.pnl_percent).toFixed(2)}%` : "—"}
                                         </td>
                                     </tr>
