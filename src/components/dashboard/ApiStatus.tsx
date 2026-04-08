@@ -39,7 +39,7 @@ export default function ApiStatus() {
 
             <div className="grid grid-cols-2 md:flex items-center gap-1 md:gap-2 overflow-visible">
                 {health?.services && Object.entries(health.services).map(([name, data]) => (
-                    <Tooltip key={name} content={data.message}>
+                    <Tooltip key={name} content={data.message} position="bottom">
                         <motion.div
                             whileHover={{ scale: 1.05 }}
                             className={`flex items-center justify-center gap-1 md:gap-1.5 px-1.5 md:px-3 py-1 md:py-1.5 rounded-lg border ${getStatusColor(data.status)} transition-all cursor-pointer relative group shadow-sm`}
