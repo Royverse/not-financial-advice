@@ -34,7 +34,12 @@ jobs:
           XPOZ_API_KEY: ${{ secrets.XPOZ_API_KEY }}
 
       - name: Deploy to Netlify
-        run: npx netlify deploy --dir=out --functions=netlify/functions-dist --prod --message="GitHub Actions deploy ${{ github.sha }}"
+        uses: nwtgck/actions-netlify@v2.1
+        with:
+          publish-dir: ./out
+          production-deploy: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          functions-dir: ./netlify/functions-dist
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
