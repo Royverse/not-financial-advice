@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useStockData } from "@/hooks/useStockData";
 import StockChart from "../ui/StockChart";
 import AIAnalysis from "../analysis/AIAnalysis";
@@ -11,14 +11,25 @@ import ApiStatus from "./ApiStatus";
 import PipelineStatus from "./PipelineStatus";
 import PaperPortfolio from "../portfolio/PaperPortfolio";
 import { ThemeToggle } from "../ui/ThemeToggle";
-import { Search, BarChart3, TrendingUp, Zap, LayoutGrid, BookOpen, Briefcase } from "lucide-react";
+import { Search, BarChart3, TrendingUp, Zap, LayoutGrid, BookOpen, Briefcase, Menu, X, LucideIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link"; // For docs link
+import Lottie, { LottieRefCurrentProps } from "lottie-react";
+import searchAnimation from "../../../public/Search Icon.json";
+import paymentLoadingAnimation from "../../../public/Payment Loading.json";
 
 export default function Dashboard() {
     const [symbol, setSymbol] = useState("AAPL");
     const { stockData, aiAnalysis, sentiment, loading, error, pipelineSteps, fetchStockData } = useStockData();
     const [view, setView] = useState("live"); // 'live' | 'scanner' | 'history'
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const paymentLottieRef = useRef<LottieRefCurrentProps>(null);
+
+    useEffect(() => {
+        if (paymentLottieRef.current) {
+            paymentLottieRef.current.setSpeed(0.5);
+        }
+    }, [view, stockData]); // Re-run when switching views or data loads to ensure it's set on the new instance
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -40,54 +51,73 @@ export default function Dashboard() {
                 </div>
 
                 <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 w-full xl:w-auto lg:flex-1 lg:justify-end">
-                    <div className="hidden md:block flex-shrink-0">
-                        <ApiStatus />
+                    {/* Desktop Navigation */}
+                    <div className="hidden md:flex items-center gap-4">
+                        <div className="overflow-visible">
+                            <ApiStatus />
+                        </div>
+
+                        <div className="flex glass-card p-1 !rounded-2xl border-foreground/5 shadow-none backdrop-blur-md">
+                            <button
+                                onClick={() => setView("live")}
+                                className={`px-6 py-2 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${view === "live"
+                                    ? "bg-solarized-blue/20 text-solarized-blue border border-solarized-blue/10 shadow-sm"
+                                    : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
+                                    }`}
+                            >
+                                <TrendingUp className="h-4 w-4" />
+                                <span>Live Terminal</span>
+                            </button>
+                            <button
+                                onClick={() => setView("scanner")}
+                                className={`px-6 py-2 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${view === "scanner"
+                                    ? "bg-solarized-violet/20 text-solarized-violet border border-solarized-violet/10 shadow-sm"
+                                    : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
+                                    }`}
+                            >
+                                <Zap className="h-4 w-4" />
+                                <span>Scanner</span>
+                            </button>
+                            <button
+                                onClick={() => setView("history")}
+                                className={`px-6 py-2 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${view === "history"
+                                    ? "bg-solarized-magenta/20 text-solarized-magenta border border-solarized-magenta/30 shadow-sm"
+                                    : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
+                                    }`}
+                            >
+                                <LayoutGrid className="h-4 w-4" />
+                                <span>History</span>
+                            </button>
+                            <button
+                                onClick={() => setView("portfolio")}
+                                className={`px-6 py-2 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${view === "portfolio"
+                                    ? "bg-solarized-green/20 text-solarized-green border border-solarized-green/10 shadow-sm"
+                                    : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
+                                    }`}
+                            >
+                                <Briefcase className="h-4 w-4" />
+                                <span>Portfolio</span>
+                            </button>
+                        </div>
                     </div>
 
-                    <div className="flex glass-card p-1 w-full md:w-auto overflow-x-auto custom-scrollbar border-foreground/5 shadow-none backdrop-blur-md max-w-[calc(100vw-2rem)]">
-                        <button
-                            onClick={() => setView("live")}
-                            className={`flex-shrink-0 md:flex-none px-4 md:px-6 py-2 rounded-xl text-xs md:text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${view === "live"
-                                ? "bg-solarized-blue/20 text-solarized-blue border border-solarized-blue/10 shadow-sm"
-                                : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
-                                }`}
-                        >
-                            <TrendingUp className="h-4 w-4" />
-                            <span>Live Terminal</span>
-                        </button>
-                        <button
-                            onClick={() => setView("scanner")}
-                            className={`flex-shrink-0 md:flex-none px-4 md:px-6 py-2 rounded-xl text-xs md:text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${view === "scanner"
-                                ? "bg-solarized-violet/20 text-solarized-violet border border-solarized-violet/10 shadow-sm"
-                                : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
-                                }`}
-                        >
-                            <Zap className="h-4 w-4" />
-                            <span>Scanner</span>
-                        </button>
-                        <button
-                            onClick={() => setView("history")}
-                            className={`flex-shrink-0 md:flex-none px-4 md:px-6 py-2 rounded-xl text-xs md:text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${view === "history"
-                                ? "bg-solarized-magenta/20 text-solarized-magenta border border-solarized-magenta/30 shadow-sm"
-                                : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
-                                }`}
-                        >
-                            <LayoutGrid className="h-4 w-4" />
-                            <span>History</span>
-                        </button>
-                        <button
-                            onClick={() => setView("portfolio")}
-                            className={`flex-shrink-0 md:flex-none px-4 md:px-6 py-2 rounded-xl text-xs md:text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${view === "portfolio"
-                                ? "bg-solarized-green/20 text-solarized-green border border-solarized-green/10 shadow-sm"
-                                : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
-                                }`}
-                        >
-                            <Briefcase className="h-4 w-4" />
-                            <span>Portfolio</span>
-                        </button>
+                    {/* Mobile Controls & Burger Trigger */}
+                    <div className="flex md:hidden items-center justify-between w-full">
+                        <div className="p-1 glass-card border-foreground/5 overflow-visible">
+                            <ApiStatus />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setIsMenuOpen(true)}
+                                className="p-3 glass-card bg-solarized-blue/10 text-solarized-blue border-solarized-blue/20"
+                            >
+                                <Menu className="h-6 w-6" />
+                            </button>
+                        </div>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                    {/* Utils (Docs & Theme) - Static on Desktop, Hidden on Mobile (put in menu) */}
+                    <div className="hidden md:flex items-center gap-2 shrink-0">
                         <Link
                             href="/docs"
                             className="p-2.5 glass-card hover:bg-foreground/5 border-foreground/5 text-foreground/60 hover:text-foreground transition group shadow-none"
@@ -98,6 +128,71 @@ export default function Dashboard() {
                         <ThemeToggle />
                     </div>
                 </div>
+
+                {/* Mobile Menu Overlay */}
+                <AnimatePresence>
+                    {isMenuOpen && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-[1000] bg-solarized-base03/90 backdrop-blur-2xl md:hidden p-6 flex flex-col gap-8"
+                        >
+                            <div className="flex justify-between items-center">
+                                <h2 className="text-2xl font-black text-solarized-blue tracking-tighter">Navigation</h2>
+                                <button
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="p-3 glass-card border-foreground/10 text-foreground/60"
+                                >
+                                    <X className="h-6 w-6" />
+                                </button>
+                            </div>
+
+                            <div className="flex flex-col gap-4">
+                                <MobileNavItem
+                                    icon={TrendingUp}
+                                    label="Live Terminal"
+                                    active={view === "live"}
+                                    color="solarized-blue"
+                                    onClick={() => { setView("live"); setIsMenuOpen(false); }}
+                                />
+                                <MobileNavItem
+                                    icon={Zap}
+                                    label="Market Scanner"
+                                    active={view === "scanner"}
+                                    color="solarized-violet"
+                                    onClick={() => { setView("scanner"); setIsMenuOpen(false); }}
+                                />
+                                <MobileNavItem
+                                    icon={LayoutGrid}
+                                    label="Analysis History"
+                                    active={view === "history"}
+                                    color="solarized-magenta"
+                                    onClick={() => { setView("history"); setIsMenuOpen(false); }}
+                                />
+                                <MobileNavItem
+                                    icon={Briefcase}
+                                    label="Paper Portfolio"
+                                    active={view === "portfolio"}
+                                    color="solarized-green"
+                                    onClick={() => { setView("portfolio"); setIsMenuOpen(false); }}
+                                />
+                            </div>
+
+                            <div className="mt-auto border-t border-foreground/10 pt-8 flex items-center justify-between">
+                                <Link
+                                    href="/docs"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="flex items-center gap-3 text-foreground/60 font-medium"
+                                >
+                                    <BookOpen className="h-6 w-6" />
+                                    <span>Technical Documentation</span>
+                                </Link>
+                                <ThemeToggle />
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </header>
 
             {/* Main Content Area - Grid Layout */}
@@ -110,17 +205,28 @@ export default function Dashboard() {
                             <motion.form
                                 layout
                                 onSubmit={handleSubmit}
-                                className="glass-card p-2 flex items-center gap-2 relative z-20 shadow-none"
+                                className="glass-card p-2 flex items-center gap-2 relative z-20 shadow-none flex-shrink-0 min-h-[64px]"
                             >
                                 <div className="p-3 bg-solarized-blue/10 rounded-xl">
-                                    <Search className="h-5 w-5 text-solarized-blue" />
+                                    <div className="w-5 h-5 flex items-center justify-center overflow-hidden relative">
+                                        {loading ? (
+                                            <div className="absolute pt-3 w-24 h-24 flex-shrink-0">
+                                                <Lottie
+                                                    animationData={searchAnimation}
+                                                    loop={true}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <Search className="h-5 w-5 text-solarized-blue" />
+                                        )}
+                                    </div>
                                 </div>
                                 <input
                                     type="text"
                                     value={symbol}
                                     onChange={(e) => setSymbol(e.target.value.toUpperCase())}
                                     placeholder="ENTER TICKER (e.g. NVDA)"
-                                    className="bg-transparent border-none outline-none text-foreground placeholder-foreground/30 font-bold tracking-widest w-full h-full"
+                                    className="bg-transparent border-none outline-none text-foreground placeholder-foreground/30 font-bold tracking-widest w-full py-3 px-1"
                                 />
                                 <button
                                     type="submit"
@@ -201,13 +307,18 @@ export default function Dashboard() {
                                 </motion.div>
                             ) : (
                                 <div className="glass-card h-full flex flex-col items-center justify-center gap-6 relative overflow-hidden shadow-none">
-                                    <div className="relative">
-                                        <div className="absolute inset-0 bg-solarized-blue/20 blur-3xl rounded-full" />
-                                        <BarChart3 className="h-32 w-32 text-foreground/5 relative z-10" />
+                                    <div className="relative w-64 h-64 flex items-center justify-center">
+                                        <div className="absolute inset-0 bg-solarized-blue/40 blur-3xl rounded-full" />
+                                        <div className="relative z-10 w-full h-full opacity-40">
+                                            <Lottie 
+                                                lottieRef={paymentLottieRef}
+                                                animationData={paymentLoadingAnimation} 
+                                                loop={true} 
+                                            />
+                                        </div>
                                     </div>
                                     <div className="text-center space-y-2 relative z-10">
                                         <h3 className="text-foreground/20 font-bold tracking-[0.3em] text-lg uppercase">Waiting for Data Stream</h3>
-                                        <p className="text-foreground/10 text-xs font-mono">STANDBY — INITIALIZING ALPHA</p>
                                     </div>
                                 </div>
                             )}
@@ -251,3 +362,17 @@ export default function Dashboard() {
 
 // Add types for props to quiet lint if needed
 interface DashboardProps { }
+
+function MobileNavItem({ icon: Icon, label, active, onClick, color }: { icon: LucideIcon, label: string, active: boolean, onClick: () => void, color: string }) {
+    return (
+        <button
+            onClick={onClick}
+            className={`flex items-center gap-4 p-5 rounded-3xl border transition-all text-left ${active
+                ? `bg-${color}/10 border-${color}/30 text-${color}`
+                : 'bg-foreground/5 border-transparent text-foreground/40'}`}
+        >
+            <Icon className="h-6 w-6" />
+            <span className="text-lg font-black uppercase tracking-widest">{label}</span>
+        </button>
+    );
+}

@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   },
 };
 
-import FallingLeaves from "@/components/ui/FallingLeaves";
+import Aurora from "@/components/ui/Aurora";
 import { ThemeProvider } from "@/components/ui/ThemeProvider";
 
 export default function RootLayout({
@@ -66,7 +66,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <FallingLeaves />
+          <Aurora 
+            speed={0.5} 
+            blend={0.79} 
+            colorStops={['#b366ff', '#5227FF', '#b366ff']} 
+          />
           {children}
         </ThemeProvider>
       </body>

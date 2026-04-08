@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Book, ShieldCheck, Zap, BarChart3, Clock, DollarSign, TrendingDown, Target } from "lucide-react";
+import { ArrowLeft, Book, ShieldCheck, Zap, BarChart3, Clock, DollarSign, TrendingDown, Target, Github } from "lucide-react";
 import { motion } from "framer-motion";
 import Mermaid from "@/components/ui/Mermaid";
 
@@ -177,6 +177,15 @@ export default function DocsPage() {
                         <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition" />
                         Back to Dashboard
                     </Link>
+                    <a
+                        href="https://github.com/Royverse/not-financial-advice"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-gray-500 hover:text-white transition group font-medium"
+                    >
+                        <Github className="h-4 w-4 group-hover:scale-110 transition" />
+                        GitHub Repo
+                    </a>
                     <div className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-md rounded-full border border-white/10 shadow-sm">
                         <Book className="h-4 w-4 text-purple-400" />
                         <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Technical Documentation</span>

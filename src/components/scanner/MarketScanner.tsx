@@ -99,15 +99,15 @@ export default function MarketScanner() {
         : null;
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full min-h-[500px]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full min-h-[500px] w-full max-w-full overflow-hidden">
             {/* Sidebar: Scan History */}
-            <div className="lg:col-span-4 glass-card p-4 flex flex-col gap-4 overflow-hidden border-foreground/5 bg-foreground/5">
+            <div className="lg:col-span-4 glass-card p-4 flex flex-col gap-4 overflow-hidden border-foreground/5 bg-foreground/5 w-full">
                 <div className="flex items-center gap-2 px-2 pb-2 border-b border-foreground/10">
                     <Clock className="h-5 w-5 text-solarized-violet" />
                     <h3 className="font-bold text-foreground/60 uppercase tracking-wider text-sm">Scan History</h3>
                 </div>
 
-                <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar max-h-[300px] lg:max-h-none">
                     {loading && scans.length === 0 ? (
                         <div className="flex justify-center py-10 opacity-50">
                             <Activity className="h-6 w-6 animate-pulse text-solarized-violet" />
@@ -151,11 +151,11 @@ export default function MarketScanner() {
             </div>
 
             {/* Main Content */}
-            <div className="lg:col-span-8 space-y-6 overflow-y-auto pr-2 custom-scrollbar pb-20">
+            <div className="lg:col-span-8 min-w-0 max-w-full space-y-6 lg:overflow-y-auto pr-0 lg:pr-2 custom-scrollbar pb-20 w-full">
                 {selectedScan ? (
-                    <>
+                    <div className="space-y-6 w-full max-w-full overflow-hidden">
                         {/* Opportunities */}
-                        <div className="space-y-4">
+                        <div className="space-y-4 w-full">
                             <div className="flex items-center gap-2">
                                 <Target className="h-5 w-5 text-solarized-green" />
                                 <h3 className="font-bold text-foreground/60 uppercase tracking-wider text-sm">Valid Opportunities</h3>
@@ -189,7 +189,7 @@ export default function MarketScanner() {
                                         </div>
 
                                         {op.take_profit && op.stop_loss && (
-                                            <div className="flex gap-2 mb-4">
+                                            <div className="flex flex-wrap gap-2 mb-4">
                                                 <span className="text-[10px] bg-solarized-green/10 text-solarized-green font-bold px-2 py-1 rounded-md uppercase tracking-wider">TP: ${op.take_profit}</span>
                                                 <span className="text-[10px] bg-solarized-red/10 text-solarized-red font-bold px-2 py-1 rounded-md uppercase tracking-wider">SL: ${op.stop_loss}</span>
                                                 {op.risk_reward_ratio && (
@@ -238,7 +238,7 @@ export default function MarketScanner() {
 
                         {/* Fade Analysis Panel */}
                         {candidates.length > 0 && (
-                            <div className="space-y-4">
+                            <div className="space-y-4 w-full">
                                 <div className="flex items-center gap-2">
                                     <TrendingDown className="h-5 w-5 text-solarized-red" />
                                     <h3 className="font-bold text-foreground/60 uppercase tracking-wider text-sm">Gainer Fade Analysis</h3>
@@ -276,59 +276,61 @@ export default function MarketScanner() {
                         )}
 
                         {/* Raw Candidates */}
-                        <div className="space-y-4">
+                        <div className="space-y-4 w-full max-w-full overflow-hidden">
                             <div className="flex items-center gap-2">
                                 <List className="h-5 w-5 text-foreground/40" />
                                 <h3 className="font-bold text-foreground/60 uppercase tracking-wider text-sm">Filtering Logs</h3>
                             </div>
 
-                            <div className="glass-card overflow-hidden shadow-sm border-foreground/10 bg-transparent">
-                                <table className="w-full text-left text-sm">
-                                    <thead className="bg-foreground/5 text-foreground/40 text-[10px] uppercase border-b border-foreground/10">
-                                        <tr>
-                                            <th className="px-5 py-3 font-bold">Ticker</th>
-                                            <th className="px-5 py-3 font-bold text-center">Result</th>
-                                            <th className="px-5 py-3 font-bold">Details</th>
-                                            <th className="px-5 py-3 font-bold text-right">Gap %</th>
-                                            <th className="px-5 py-3 font-bold text-center">Fade Risk</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-foreground/5 text-xs text-foreground/60">
-                                        {candidates.map((cand) => {
-                                            const fade = getFadeRisk(cand.gap_percent);
-                                            return (
-                                                <tr key={cand.id} className="hover:bg-foreground/5 transition">
-                                                    <td className="px-5 py-3 font-bold text-foreground">{cand.ticker}</td>
-                                                    <td className="px-5 py-3 text-center">
-                                                        {cand.rejection_reason ? (
-                                                            <XCircle className="h-4 w-4 text-solarized-red mx-auto" />
-                                                        ) : (
-                                                            <CheckCircle2 className="h-4 w-4 text-solarized-green mx-auto" />
-                                                        )}
-                                                    </td>
-                                                    <td className="px-5 py-3">
-                                                        {cand.rejection_reason ? (
-                                                            <span className="text-solarized-red/70 font-medium">{cand.rejection_reason}</span>
-                                                        ) : (
-                                                            <span className="text-solarized-green font-bold bg-solarized-green/10 px-2 py-0.5 rounded-full">Passed</span>
-                                                        )}
-                                                    </td>
-                                                    <td className="px-5 py-3 text-right font-mono font-medium text-foreground/30">
-                                                        {cand.gap_percent > 0 ? '+' : ''}{cand.gap_percent.toFixed(2)}%
-                                                    </td>
-                                                    <td className="px-5 py-3 text-center">
-                                                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${fade.color}`}>
-                                                            {fade.level}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
+                            <div className="glass-card shadow-sm border-foreground/10 bg-transparent px-2 md:px-4 pb-4 max-w-full overflow-hidden">
+                                <div className="overflow-x-auto custom-scrollbar w-full mt-4">
+                                    <table className="min-w-[850px] w-full text-left text-xs md:text-sm">
+                                        <thead className="bg-foreground/5 text-foreground/40 text-[10px] uppercase border-b border-foreground/10">
+                                            <tr>
+                                                <th className="px-5 py-3 font-bold">Ticker</th>
+                                                <th className="px-5 py-3 font-bold text-center">Result</th>
+                                                <th className="px-5 py-3 font-bold">Details</th>
+                                                <th className="px-5 py-3 font-bold text-right">Gap %</th>
+                                                <th className="px-5 py-3 font-bold text-center">Fade Risk</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-foreground/5 text-xs text-foreground/60">
+                                            {candidates.map((cand) => {
+                                                const fade = getFadeRisk(cand.gap_percent);
+                                                return (
+                                                    <tr key={cand.id} className="hover:bg-foreground/5 transition">
+                                                        <td className="px-5 py-3 font-bold text-foreground">{cand.ticker}</td>
+                                                        <td className="px-5 py-3 text-center">
+                                                            {cand.rejection_reason ? (
+                                                                <XCircle className="h-4 w-4 text-solarized-red mx-auto" />
+                                                            ) : (
+                                                                <CheckCircle2 className="h-4 w-4 text-solarized-green mx-auto" />
+                                                            )}
+                                                        </td>
+                                                        <td className="px-5 py-3">
+                                                            {cand.rejection_reason ? (
+                                                                <span className="text-solarized-red/70 font-medium">{cand.rejection_reason}</span>
+                                                            ) : (
+                                                                <span className="text-solarized-green font-bold bg-solarized-green/10 px-2 py-0.5 rounded-full">Passed</span>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-5 py-3 text-right font-mono font-medium text-foreground/30">
+                                                            {cand.gap_percent > 0 ? '+' : ''}{cand.gap_percent.toFixed(2)}%
+                                                        </td>
+                                                        <td className="px-5 py-3 text-center">
+                                                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${fade.color}`}>
+                                                                {fade.level}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
-                    </>
+                    </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center h-full text-foreground/20 space-y-4">
                         <Radar className="h-16 w-16 opacity-20" />

@@ -207,7 +207,7 @@ export default function HistoryTable() {
                 {records.length === 0 ? (
                     <div className="text-center py-20 text-foreground/30 font-medium">
                         {loading ? (
-                            <Activity className="h-8 w-8 animate-spin mx-auto text-solarized-violet opacity-50" />
+                            <Activity className="h-8 w-8 animate-pulse mx-auto text-solarized-violet opacity-50" />
                         ) : (
                             <p className="uppercase text-xs font-bold tracking-widest">No history recorded.</p>
                         )}
