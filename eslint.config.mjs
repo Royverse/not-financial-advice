@@ -13,7 +13,7 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     // Compiled Netlify function bundles (minified, not source)
-    "netlify/functions-dist/**",
+    "netlify/**",
     // Dependencies
     "node_modules/**",
   ]),
