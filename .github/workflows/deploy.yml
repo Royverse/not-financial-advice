@@ -21,26 +21,21 @@ jobs:
         run: npm install
 
       - name: Build Project
-        run: npm run build
+        run: npm run full-build
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-
-      - name: Build Serverless Functions
-        run: npm run build:functions
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
+          ALPHA_VANTAGE_API_KEY_2: ${{ secrets.ALPHA_VANTAGE_API_KEY_2 }}
+          XPOZ_API_KEY: ${{ secrets.XPOZ_API_KEY }}
 
       - name: Deploy to Netlify
-        uses: ntl/netlify-deploy-action@v1
+        uses: nwtgck/actions-netlify@v2.1
         with:
           publish-dir: ./out
-          functions-dir: ./netlify/functions-dist
           production-deploy: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
           netlify-auth-token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           netlify-site-id: ${{ secrets.NETLIFY_SITE_ID }}
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
-          XPOZ_API_KEY: ${{ secrets.XPOZ_API_KEY }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          functions-dir: ./netlify/functions-dist
