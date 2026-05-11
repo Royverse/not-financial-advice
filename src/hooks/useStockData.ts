@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { StockData, AIAnalysis, XpozSentiment } from '@/types';
-import { GeminiService } from '@/lib/services/gemini';
 import { supabase } from '@/lib/services/supabase';
+
+export type AIEngine = 'auto' | 'groq' | 'gemini' | 'openrouter';
 
 export interface PipelineStep {
     id: string;
@@ -26,7 +27,7 @@ export function useStockData() {
         ));
     };
 
-    const fetchStockData = async (ticker: string) => {
+    const fetchStockData = async (ticker: string, engine: AIEngine = 'auto') => {
         if (!ticker) return;
 
         // Reset state
@@ -162,15 +163,16 @@ export function useStockData() {
             });
         }
 
-        // STEP 3: Run Gemini AI Analysis
+        // STEP 3: Run AI Analysis
         const geminiStart = Date.now();
-        updateStep('gemini', { status: 'running', message: 'Sending data to Gemini AI...' });
+        updateStep('gemini', { status: 'running', message: `Sending data to AI Engine (${engine})...` });
 
         try {
             const geminiRes = await axios.post("/api/gemini", {
                 ticker,
                 data: stockResult,
-                sentiment: sentimentResult
+                sentiment: sentimentResult,
+                engine
             });
 
             const geminiDuration = Date.now() - geminiStart;

@@ -80,50 +80,232 @@ async function mcpCall(method: string, params: Record<string, unknown>): Promise
     }
 }
 
-// ─── Sentiment scoring ────────────────────────────────────────────────────────
+function parseCSVLine(line: string): string[] {
+  const fields: string[] = [];
+  let current = '';
+  let inQuotes = false;
 
-const POSITIVE_WORDS = ['bull', 'bullish', 'buy', 'good', 'growth', 'profit', 'up', 'moon', 'call', 'long', 'rally', 'gain', 'love', 'great'];
-const NEGATIVE_WORDS = ['bear', 'bearish', 'sell', 'bad', 'loss', 'down', 'crash', 'put', 'short', 'dump', 'drop', 'fear', 'risk'];
-
-function countKeywords(text: string, words: string[]): number {
-    return words.reduce((sum, w) => sum + (text.match(new RegExp(`\\b${w}\\b`, 'g'))?.length ?? 0), 0);
-}
-
-function scoreSentiment(rawText: string) {
-    const text = rawText.toLowerCase();
-    const pos = countKeywords(text, POSITIVE_WORDS);
-    const neg = countKeywords(text, NEGATIVE_WORDS);
-    const total = pos + neg;
-
-    let label: 'Bullish' | 'Bearish' | 'Neutral' = 'Neutral';
-    if (pos > neg * 1.2) label = 'Bullish';
-    if (neg > pos * 1.2) label = 'Bearish';
-
-    let score = total > 0
-        ? Math.min(0.95, 0.5 + (Math.abs(pos - neg) / total) * 0.45)
-        : 0.5;
-
-    return { label, pos, neg, total, score };
-}
-
-function extractTweets(rawText: string): string[] {
-    const lines = rawText.split('\n');
-    const tweets: string[] = [];
-    
-    for (let line of lines) {
-        line = line.trim();
-        // Match format: "id",text,author,impressions,lang,"date"
-        const match = line.match(/^"\d+",(.*?),([^,]+),("[^"]+"|[^,]+),([^,]+),"[^"]+"$/);
-        if (match) {
-            let text = match[1];
-            if (text.startsWith('"') && text.endsWith('"')) {
-                text = text.slice(1, -1);
-            }
-            text = text.replace(/\\n/g, ' ');
-            tweets.push(text);
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        // handle escaped quotes ""
+        if (i + 1 < line.length && line[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else {
+          inQuotes = false;
         }
+      } else {
+        current += ch;
+      }
+    } else {
+      if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === ',') {
+        fields.push(current.trim());
+        current = '';
+      } else {
+        current += ch;
+      }
     }
-    return tweets.filter(t => t.length > 20 && !t.startsWith('http'));
+  }
+  fields.push(current.trim());   // last field
+  return fields;
+}
+
+interface ProcessedTweet {
+  text: string;
+  author: string;
+  impressions: number;
+}
+
+function extractTweets(rawText: string): ProcessedTweet[] {
+  const lines = rawText.split('\n');
+  const tweets: ProcessedTweet[] = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.toLowerCase().startsWith('"id"')) continue; // skip header/empty
+
+    const fields = parseCSVLine(trimmed);
+    // Expect at least: id, text, author, impressions, ...
+    if (fields.length < 4) continue;
+
+    const id = fields[0].replace(/^"|"$/g, '');
+    const text = fields[1].replace(/\\n/g, ' ').trim();
+    const author = fields[2].replace(/^"|"$/g, '');
+    const impressions = parseInt(fields[3], 10) || 0;
+
+    // filter out very short or link-only tweets (same criteria as original)
+    if (text.length <= 20 || text.startsWith('http')) continue;
+
+    tweets.push({ text, author, impressions });
+  }
+  return tweets;
+}
+
+// Sentiment lexicons
+const POSITIVE_WORDS = [
+  'bull', 'bullish', 'buy', 'good', 'growth', 'profit',
+  'up', 'moon', 'call', 'long', 'rally', 'gain', 'love', 'great'
+];
+const NEGATIVE_WORDS = [
+  'bear', 'bearish', 'sell', 'bad', 'loss', 'down', 'crash',
+  'put', 'short', 'dump', 'drop', 'fear', 'risk'
+];
+
+// Negation tokens (including contractions like "don't", "won't", etc.)
+function isNegationToken(token: string): boolean {
+  return /^(?:not?|never|no)$/i.test(token) || /n't$/i.test(token);
+}
+
+interface TweetSentiment {
+  effectivePos: number;
+  effectiveNeg: number;
+}
+
+function analyzeTweet(tweet: ProcessedTweet): TweetSentiment {
+  const text = tweet.text.toLowerCase();
+  // Tokenize on word boundaries, keeping contractions (e.g. "don't")
+  const tokens = text.match(/\b\w+(?:'\w+)?\b/g) ?? [];
+
+  let rawPosIndex: number[] = [];
+  let rawNegIndex: number[] = [];
+
+  // Find all positive keyword positions
+  for (const word of POSITIVE_WORDS) {
+    const regex = new RegExp(`\\b${word}\\b`, 'g');
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+      // convert char index to token index
+      const preceding = text.slice(0, match.index);
+      const tokenIdx = preceding.split(/\s+/).length - 1;
+      rawPosIndex.push(tokenIdx);
+    }
+  }
+
+  // Find all negative keyword positions
+  for (const word of NEGATIVE_WORDS) {
+    const regex = new RegExp(`\\b${word}\\b`, 'g');
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+      const preceding = text.slice(0, match.index);
+      const tokenIdx = preceding.split(/\s+/).length - 1;
+      rawNegIndex.push(tokenIdx);
+    }
+  }
+
+  // Helper: check negation window
+  const hasNegation = (tokenIdx: number) => {
+    for (let i = Math.max(0, tokenIdx - 3); i < tokenIdx; i++) {
+      if (isNegationToken(tokens[i])) return true;
+    }
+    return false;
+  };
+
+  let effectivePos = 0;
+  let effectiveNeg = 0;
+
+  for (const idx of rawPosIndex) {
+    if (hasNegation(idx)) {
+      // negated positive → negative (weight 0.8)
+      effectiveNeg += 0.8;
+    } else {
+      effectivePos += 1;
+    }
+  }
+
+  for (const idx of rawNegIndex) {
+    if (hasNegation(idx)) {
+      // negated negative → positive (weight 0.8)
+      effectivePos += 0.8;
+    } else {
+      effectiveNeg += 1;
+    }
+  }
+
+  return { effectivePos, effectiveNeg };
+}
+
+function scoreSentimentAdvanced(rawText: string) {
+  const tweets = extractTweets(rawText);
+  if (tweets.length === 0) {
+    return {
+      label: 'Neutral' as const,
+      score: 0.5,
+      totalEffectivePos: 0,
+      totalEffectiveNeg: 0,
+      evidence: [] as string[],
+      totalRows: 0
+    };
+  }
+
+  let totalWeightedPolarity = 0;    // Σ weight * (pos - neg)
+  let totalWeightedMagnitude = 0;   // Σ weight * (pos + neg)
+  let totalEffectivePos = 0;
+  let totalEffectiveNeg = 0;
+
+  // Impression weighting: log base 2 to compress range, +1 to avoid zero weight
+  const weightFn = (impressions: number) => Math.log2(impressions + 1) + 1;
+
+  for (const tweet of tweets) {
+    const { effectivePos, effectiveNeg } = analyzeTweet(tweet);
+    const polarity = effectivePos - effectiveNeg;
+    const magnitude = effectivePos + effectiveNeg;
+    const weight = weightFn(tweet.impressions);
+
+    totalWeightedPolarity += weight * polarity;
+    totalWeightedMagnitude += weight * magnitude;
+    totalEffectivePos += effectivePos;
+    totalEffectiveNeg += effectiveNeg;
+  }
+
+  // Evidence: top 5 tweets by impression (the most influential)
+  const evidence = tweets
+    .sort((a, b) => b.impressions - a.impressions)
+    .slice(0, 5)
+    .map(t => t.text);
+
+  // If no sentiment words found anywhere -> neutral
+  if (totalWeightedMagnitude === 0) {
+    return {
+      label: 'Neutral' as const,
+      score: 0.5,
+      totalEffectivePos,
+      totalEffectiveNeg,
+      evidence,
+      totalRows: tweets.length
+    };
+  }
+
+  // Raw ratio [-1, 1]
+  const rawRatio = totalWeightedPolarity / totalWeightedMagnitude;
+  // Map to [0, 1]: neutral = 0.5, bullish = 1, bearish = 0
+  let score = 0.5 + 0.5 * rawRatio;
+
+  // Confidence factor: shrink score towards 0.5 when total weighted evidence is small
+  const MIN_STRONG_EVIDENCE = 10; // tunable threshold
+  const confidenceFactor = Math.min(1, totalWeightedMagnitude / MIN_STRONG_EVIDENCE);
+  score = 0.5 + (score - 0.5) * confidenceFactor;
+
+  // Clamp to [0, 1]
+  score = Math.max(0, Math.min(1, score));
+
+  // Label based on raw ratio, but using a slightly wider neutral band (±0.25)
+  let label: 'Bullish' | 'Bearish' | 'Neutral';
+  if (rawRatio > 0.25) label = 'Bullish';
+  else if (rawRatio < -0.25) label = 'Bearish';
+  else label = 'Neutral';
+
+  return {
+    label,
+    score,
+    totalEffectivePos,
+    totalEffectiveNeg,
+    evidence,
+    totalRows: tweets.length
+  };
 }
 
 // ─── Handler ──────────────────────────────────────────────────────────────────
@@ -158,13 +340,13 @@ export default async (req: Request) => {
             if (cached && cached.length > 0) {
                 const age = Date.now() - new Date(cached[0].created_at).getTime();
                 const TWO_HOURS = 2 * 60 * 60 * 1000;
-                
+
                 if (age < TWO_HOURS) {
                     console.log(`[Xpoz Cache] Hit for ${query}: ${cached[0].sentiment_label}`);
                     let evidence: any[] = [];
                     try {
-                        evidence = typeof cached[0].sentiment_evidence === 'string' 
-                            ? JSON.parse(cached[0].sentiment_evidence) 
+                        evidence = typeof cached[0].sentiment_evidence === 'string'
+                            ? JSON.parse(cached[0].sentiment_evidence)
                             : (cached[0].sentiment_evidence || []);
                     } catch (e) {
                         console.warn('[Xpoz Cache] Failed to parse evidence:', e);
@@ -185,7 +367,7 @@ export default async (req: Request) => {
 
             const text = await mcpCall('tools/call', {
                 name: 'getTwitterPostsByKeywords',
-                arguments: { query, limit: 8, responseType: 'paging' },
+                arguments: { query, limit: 8 },
             });
 
             if (!text) return Response.json({ error: 'Failed to start XPOZ job — check function logs for details' }, { status: 500 });
@@ -193,24 +375,23 @@ export default async (req: Request) => {
             // CASE A: Direct Results (Xpoz returned data immediately for small query)
             if (text.includes('results[') || text.includes('status: success')) {
                 console.log(`[Xpoz] Received direct results for query: ${query}`);
-                
-                const tweets = extractTweets(text);
-                const evidence = tweets.slice(0, 5);
-                const { label, pos, neg, score } = scoreSentiment(text);
+
+                const { label, score, totalEffectivePos, totalEffectiveNeg, evidence, totalRows: extractedTotalRows } = scoreSentimentAdvanced(text);
 
                 const countMatch = text.match(/results\[(\d+)\]/i);
-                const totalRows = countMatch ? parseInt(countMatch[1], 10) : tweets.length;
+                const totalRows = countMatch ? parseInt(countMatch[1], 10) : extractedTotalRows;
                 const volume = totalRows >= 20 ? 'High' : totalRows >= 5 ? 'Medium' : 'Low';
-                const finalScore = tweets.length > 0 && pos + neg === 0 ? 0.6 : score;
 
                 return Response.json({
                     status: 'completed',
                     data: {
                         sentiment: label,
-                        score: finalScore,
-                        summary: `Analyzed ${totalRows.toLocaleString()} posts. ${pos} bullish / ${neg} bearish mentions. Overall: ${label}.`,
+                        score: score,                             // now a true 0.0–1.0 conviction
+                        summary: `Analyzed ${totalRows.toLocaleString()} posts. ` +
+                                 `${Math.round(totalEffectivePos)} bullish / ${Math.round(totalEffectiveNeg)} bearish mentions. ` +
+                                 `Overall: ${label} (conviction ${score.toFixed(2)}).`,
                         volume,
-                        evidence,
+                        evidence,                                // top 5 most‑impression tweets
                     },
                 });
             }
@@ -227,8 +408,8 @@ export default async (req: Request) => {
 
         } catch (err: any) {
             console.error('[Xpoz POST] UNHANDLED ERROR:', err.stack || err.message);
-            return Response.json({ 
-                error: 'Internal Server Error', 
+            return Response.json({
+                error: 'Internal Server Error',
                 details: err.message,
                 stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
             }, { status: 500 });
@@ -247,8 +428,8 @@ export default async (req: Request) => {
 
         if (!text) return Response.json({ status: 'running' });
 
-        // XPOZ signals completion via status: success or similar
-        const isComplete = text.includes('status: success') || text.includes('"status": "success"') || text.includes('"status":"success"');
+        // XPOZ signals completion via either "success: true" or '"status": "succeeded"'
+        const isComplete = text.includes('success: true') || text.includes('"status": "succeeded"') || text.includes('"status":"succeeded"');
 
         if (!isComplete) {
             console.log(`[Xpoz] Job ${operationId} still running`);
@@ -256,26 +437,23 @@ export default async (req: Request) => {
         }
 
         // ── Parse completed result ──────────────────────────────────────────
-        const tweets   = extractTweets(text);
-        const evidence = tweets.slice(0, 5);
-        const { label, pos, neg, score } = scoreSentiment(text);
+        const { label, score, totalEffectivePos, totalEffectiveNeg, evidence, totalRows: extractedTotalRows } = scoreSentimentAdvanced(text);
 
         // Prefer explicit result count; fall back to tweet count
         const countMatch = text.match(/results\[(\d+)\]/i);
-        const totalRows  = countMatch ? parseInt(countMatch[1], 10) : tweets.length;
-        const volume     = totalRows >= 20 ? 'High' : totalRows >= 5 ? 'Medium' : 'Low';
+        const totalRows = countMatch ? parseInt(countMatch[1], 10) : extractedTotalRows;
+        const volume = totalRows >= 20 ? 'High' : totalRows >= 5 ? 'Medium' : 'Low';
 
-        // If we have tweets but zero keyword hits, still give baseline confidence
-        const finalScore = tweets.length > 0 && pos + neg === 0 ? 0.6 : score;
-
-        console.log(`[Xpoz] Job ${operationId} complete — ${label} (${totalRows} posts, pos:${pos} neg:${neg})`);
+        console.log(`[Xpoz] Job ${operationId} complete — ${label} (${totalRows} posts, pos:${totalEffectivePos} neg:${totalEffectiveNeg})`);
 
         return Response.json({
             status: 'completed',
             data: {
                 sentiment: label,
-                score: finalScore,
-                summary: `Analyzed ${totalRows.toLocaleString()} posts. ${pos} bullish / ${neg} bearish mentions. Overall: ${label}.`,
+                score: score,
+                summary: `Analyzed ${totalRows.toLocaleString()} posts. ` +
+                         `${Math.round(totalEffectivePos)} bullish / ${Math.round(totalEffectiveNeg)} bearish mentions. ` +
+                         `Overall: ${label} (conviction ${score.toFixed(2)}).`,
                 volume,
                 evidence,
             },

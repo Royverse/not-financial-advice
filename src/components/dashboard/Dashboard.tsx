@@ -20,6 +20,7 @@ import paymentLoadingAnimation from "../../../public/Payment Loading.json";
 
 export default function Dashboard() {
     const [symbol, setSymbol] = useState("AAPL");
+    const [engine, setEngine] = useState<"auto" | "groq" | "gemini" | "openrouter">("auto");
     const { stockData, aiAnalysis, sentiment, loading, error, pipelineSteps, fetchStockData } = useStockData();
     const [view, setView] = useState("live"); // 'live' | 'scanner' | 'history'
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -33,7 +34,7 @@ export default function Dashboard() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        fetchStockData(symbol);
+        fetchStockData(symbol, engine);
     };
 
     return (
@@ -207,7 +208,7 @@ export default function Dashboard() {
                                 onSubmit={handleSubmit}
                                 className="glass-card p-2 flex items-center gap-2 relative z-20 shadow-none flex-shrink-0 min-h-[64px]"
                             >
-                                <div className="p-3 bg-solarized-blue/10 rounded-xl">
+                                <div className="p-3 bg-solarized-blue/10 rounded-xl shrink-0">
                                     <div className="w-5 h-5 flex items-center justify-center overflow-hidden relative">
                                         {loading ? (
                                             <div className="absolute pt-3 w-24 h-24 flex-shrink-0">
@@ -221,17 +222,31 @@ export default function Dashboard() {
                                         )}
                                     </div>
                                 </div>
-                                <input
-                                    type="text"
-                                    value={symbol}
-                                    onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-                                    placeholder="ENTER TICKER (e.g. NVDA)"
-                                    className="bg-transparent border-none outline-none text-foreground placeholder-foreground/30 font-bold tracking-widest w-full py-3 px-1"
-                                />
+                                <div className="flex flex-col flex-1 min-w-0">
+                                    <input
+                                        type="text"
+                                        value={symbol}
+                                        onChange={(e) => setSymbol(e.target.value.toUpperCase())}
+                                        placeholder="ENTER TICKER"
+                                        className="bg-transparent border-none outline-none text-foreground placeholder-foreground/30 font-bold tracking-widest w-full py-2 px-1"
+                                    />
+                                    <div className="flex items-center gap-2 px-1 pb-1">
+                                        <select
+                                            value={engine}
+                                            onChange={(e) => setEngine(e.target.value as any)}
+                                            className="bg-transparent border-none text-[9px] text-foreground/40 font-bold uppercase tracking-widest cursor-pointer hover:text-foreground/80 transition-colors focus:ring-0 outline-none p-0 appearance-none"
+                                        >
+                                            <option value="auto" className="bg-background text-foreground">🤖 Auto Engine (Fallback)</option>
+                                            <option value="openrouter" className="bg-background text-foreground">🐋 OpenRouter (DeepSeek R1)</option>
+                                            <option value="groq" className="bg-background text-foreground">⚡ Groq (Llama 3 70B)</option>
+                                            <option value="gemini" className="bg-background text-foreground">🧠 Google (Gemini 2.0)</option>
+                                        </select>
+                                    </div>
+                                </div>
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="px-6 py-3 bg-solarized-blue/10 text-solarized-blue border border-solarized-blue/30 hover:bg-solarized-blue/20 rounded-xl font-bold transition disabled:opacity-50 shadow-sm shadow-solarized-blue/10"
+                                    className="px-6 py-3 bg-solarized-blue/10 text-solarized-blue border border-solarized-blue/30 hover:bg-solarized-blue/20 rounded-xl font-bold transition disabled:opacity-50 shadow-sm shadow-solarized-blue/10 shrink-0 h-[48px] self-center"
                                 >
                                     {loading ? <div className="w-5 h-5 border-2 border-solarized-blue/30 border-t-solarized-blue rounded-full animate-spin" /> : "VIBE CHECK"}
                                 </button>

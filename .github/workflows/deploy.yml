@@ -66,7 +66,12 @@ jobs:
             console.log('-----------------------------');
 
       - name: Deploy to Netlify
-        run: npx netlify deploy --prod --dir=./out
+        uses: nwtgck/actions-netlify@v2.1
+        with:
+          publish-dir: ./out
+          production-deploy: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          functions-dir: ./netlify/functions-dist
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

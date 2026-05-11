@@ -1,5 +1,6 @@
 import { ScannerService } from '../../../src/lib/services/scanner';
 import { MetricsService } from '../../../src/lib/services/metrics';
+import { RegimeService, MarketRegime } from '../../../src/lib/services/regime';
 import { createClient } from '@supabase/supabase-js';
 import axios from 'axios';
 
@@ -29,6 +30,11 @@ export default async (req: Request) => {
         const scanStart = Date.now();
         let scanId: string | null = null;
         let tickersFound = 0;
+
+        // --- Step 0: Get Macro Regime (Dynamic Adaptation) ---
+        console.log('[Cron] Fetching Macro Regime...');
+        const marketRegime = await RegimeService.getRegime();
+        console.log(`[Cron] Current Regime: ${marketRegime.regime} (Bias: ${marketRegime.bias})`);
 
         // --- Step 1: Initialize Scan Log ---
         const { data: scanLog, error: scanError } = await supabase
@@ -86,15 +92,33 @@ export default async (req: Request) => {
             const sentVel = await metrics.getSentimentVelocity(cand.ticker);
             await delay(1000);
 
-            // 3.2 Conviction Score Calculation (Simplified Algorithm)
+            // 3.2 Conviction Score Calculation (Dynamic Regime-Based Algorithm)
             let score = 0;
+            
+            // Base Weights
             if (rvol > 2.0) score += 30;
             if (floatRot > 0.5) score += 20;
             if (Math.abs(sentVel) > 0.1) score += 20;
-            if (cand.change_sub > 5) score += 10; // Momentum bonus
+            if (cand.change_sub > 5) score += 10;
+
+            // Regime-Specific Multipliers
+            if (marketRegime.regime === 'Bearish') {
+                // In a bear market, we punish momentum stocks that aren't extreme
+                if (rvol < 3.0) score -= 20;
+                if (cand.change_sub < 10) score -= 10;
+            } else if (marketRegime.regime === 'Bullish') {
+                // In a bull market, we reward trend-following
+                if (cand.change_sub > 0) score += 10;
+            } else if (marketRegime.regime === 'Volatile') {
+                // High volatility -> Require higher conviction
+                score -= 10;
+            }
+
+            // Bias Check: If bias is "Short Bias", penalize long setups
+            if (marketRegime.bias === 'Short Bias') score -= 15;
 
             // Normalize to 100
-            score = Math.min(score, 100);
+            score = Math.max(0, Math.min(score, 100));
 
             // 3.3 AI Analysis Handoff
             // Call our existing Gemini API for a qualitative summary
@@ -112,8 +136,12 @@ export default async (req: Request) => {
                 // Using redirect path /api/gemini which maps to /.netlify/functions/api-gemini
                 const stockRes = await axios.post(`${APP_URL}/api/gemini`, {
                     ticker: cand.ticker,
-                    data: { "Time Series (Daily)": {} }, // Gemini will use fallback/mock if data missing, or we should fetch it
-                    sentiment: { score: sentVel, sentiment: sentVel > 0 ? 'Bullish' : 'Bearish', summary: 'Velocity Scan' }
+                    data: { 
+                        "Time Series (Daily)": {},
+                        "Market_Regime": marketRegime // Inject regime context into AI prompt
+                    }, 
+                    sentiment: { score: sentVel, sentiment: sentVel > 0 ? 'Bullish' : 'Bearish', summary: 'Velocity Scan' },
+                    engine: 'auto' // Robust fallback for cron reliability
                 });
 
                 if (stockRes.data.trend && stockRes.data.trend.includes('(Mock)')) {

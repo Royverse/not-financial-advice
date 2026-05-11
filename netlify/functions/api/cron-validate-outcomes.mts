@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import axios from 'axios';
+import { AIService } from '../../../src/lib/services/ai';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -112,6 +113,49 @@ export default async (req: Request) => {
                         validation_date: new Date().toISOString()
                     })
                     .eq('id', rec.id);
+
+                // --- Pillar 3: Algorithmic Post-Mortem (Self-Learning) ---
+                if (!isCorrect && rec.recommendation === 'Buy') {
+                    console.log(`[Post-Mortem] Analyzing failed trade on ${rec.ticker} via DeepSeek R1...`);
+                    const pmPrompt = `
+SYSTEM: You are a Senior Risk Manager. A paper trade just hit its Stop Loss.
+Analyze why this trade failed based on the data below.
+Suggest ONE permanent "Trading Rule" to prevent similar future failures.
+Respond in RAW JSON ONLY. No reasoning tokens.
+
+TRADE DATA:
+- Ticker: ${rec.ticker}
+- Entry: ${recPrice}
+- Stop Loss: ${rec.stop_loss}
+- Take Profit: ${rec.take_profit}
+- AI Thesis: ${rec.ai_summary}
+- Final Price: ${currentPrice}
+
+OUTPUT FORMAT:
+{
+  "failure_reason": "string",
+  "suggested_rule": "string",
+  "category": "Technicals" | "Sentiment" | "Macro"
+}
+`;
+                    try {
+                        const { text } = await AIService.generateContent(pmPrompt, 'openrouter');
+                        const pm = JSON.parse(text.replace(/```json/g, '').replace(/```/g, '').trim());
+                        
+                        // Log to market_scans or a dedicated rules table
+                        await supabase.from('market_scans').insert([{
+                            scan_type: 'post_mortem',
+                            status: 'completed',
+                            metadata: {
+                                ticker: rec.ticker,
+                                ...pm
+                            }
+                        }]);
+                        console.log(`[Post-Mortem] New learning captured: ${pm.suggested_rule}`);
+                    } catch (e: any) {
+                        console.warn('[Post-Mortem] Analysis failed:', e.message);
+                    }
+                }
 
                 // 4. Close the linked paper trade if it exists
                 const { data: openTrades } = await supabase

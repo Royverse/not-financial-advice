@@ -1,4 +1,4 @@
-import { GeminiService } from '../../../src/lib/services/gemini';
+import { AIService, AIEngine } from '../../../src/lib/services/ai';
 
 export default async (req: Request) => {
     if (req.method !== 'POST') {
@@ -8,14 +8,16 @@ export default async (req: Request) => {
     let tickerString = "";
     let sentiment: any = null;
     let data: any = null;
+    let engine: AIEngine = 'auto';
 
     try {
         const body = await req.json();
         tickerString = body.ticker;
         sentiment = body.sentiment;
         data = body.data;
+        if (body.engine) engine = body.engine as AIEngine;
 
-        console.log(`[Gemini Pipeline] Processing ticker: ${tickerString}`);
+        console.log(`[AI Pipeline] Processing ticker: ${tickerString} via engine: ${engine}`);
 
         if (!tickerString || !data) {
             console.error('[Gemini Pipeline] Missing ticker or price data in request body');
@@ -188,7 +190,7 @@ Format the response in JSON with these keys:
 ...
 `;
 
-        const { text: aiText, model: usedModel } = await GeminiService.generateContent(prompt);
+        const { text: aiText, model: usedModel, provider } = await AIService.generateContent(prompt, engine);
         // Clean up markdown code blocks if present
         const jsonString = aiText.replace(/```json/g, '').replace(/```/g, '').trim();
 
@@ -200,15 +202,15 @@ Format the response in JSON with these keys:
         }
 
         // Attach the debug prompt for frontend display
-        return Response.json({ ...analysis, debug_prompt: displayPrompt, used_model: usedModel });
+        return Response.json({ ...analysis, debug_prompt: displayPrompt, used_model: usedModel, provider });
 
     } catch (error: any) {
         const errorMsg = error.response?.data?.error?.message || error.message || 'Unknown Error';
-        console.error(`[Gemini Pipeline] Error during execution: ${errorMsg}`);
+        console.error(`[AI Pipeline] Error during execution: ${errorMsg}`);
         
         if (error.response) {
-            console.error(`[Gemini Pipeline] Status: ${error.response.status}`);
-            console.error(`[Gemini Pipeline] Data:`, JSON.stringify(error.response.data));
+            console.error(`[AI Pipeline] Status: ${error.response.status}`);
+            console.error(`[AI Pipeline] Data:`, JSON.stringify(error.response.data));
         }
 
         // Fallback Mock Response
