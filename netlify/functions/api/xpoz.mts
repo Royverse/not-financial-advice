@@ -121,8 +121,18 @@ export default async (req: Request) => {
     // ── POST: kick off a scrape job ──────────────────────────────────────────
     if (req.method === 'POST') {
         try {
-            const { query } = await req.json();
+            let body: any;
+            try {
+                body = await req.json();
+            } catch (jsonErr: any) {
+                console.error('[Xpoz POST] Body parse error:', jsonErr.message);
+                return Response.json({ error: `Malformed JSON body: ${jsonErr.message}` }, { status: 400 });
+            }
+
+            const { query } = body;
             if (!query) return Response.json({ error: 'query is required' }, { status: 400 });
+
+            console.log(`[Xpoz POST] Processing query: ${query}`);
 
             // --- STEP 0: Check Cache ---
             const { data: cached } = await supabase
@@ -139,6 +149,15 @@ export default async (req: Request) => {
                 
                 if (age < TWO_HOURS) {
                     console.log(`[Xpoz Cache] Hit for ${query}: ${cached[0].sentiment_label}`);
+                    let evidence: any[] = [];
+                    try {
+                        evidence = typeof cached[0].sentiment_evidence === 'string' 
+                            ? JSON.parse(cached[0].sentiment_evidence) 
+                            : (cached[0].sentiment_evidence || []);
+                    } catch (e) {
+                        console.warn('[Xpoz Cache] Failed to parse evidence:', e);
+                    }
+
                     return Response.json({
                         status: 'completed',
                         data: {
@@ -146,7 +165,7 @@ export default async (req: Request) => {
                             score: cached[0].sentiment_score,
                             summary: `Retrieved from recent analysis (${Math.round(age / 60000)}m ago).`,
                             volume: 'N/A',
-                            evidence: JSON.parse(cached[0].sentiment_evidence || '[]'),
+                            evidence,
                         },
                     });
                 }
@@ -195,8 +214,12 @@ export default async (req: Request) => {
             return Response.json({ error: 'No operationId or results returned from XPOZ' }, { status: 500 });
 
         } catch (err: any) {
-            console.error('[Xpoz POST] Unhandled error:', err.message);
-            return Response.json({ error: err.message }, { status: 500 });
+            console.error('[Xpoz POST] UNHANDLED ERROR:', err.stack || err.message);
+            return Response.json({ 
+                error: 'Internal Server Error', 
+                details: err.message,
+                stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+            }, { status: 500 });
         }
     }
 
