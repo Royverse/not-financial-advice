@@ -5,7 +5,7 @@ import { ArrowLeft, Book, ShieldCheck, Zap, BarChart3, Clock, DollarSign, Trendi
 import { motion } from "framer-motion";
 import Mermaid from "@/components/ui/Mermaid";
 
-const systemOverview = \`
+const systemOverview = `
 graph TD
     classDef ai fill:#1e3a8a,stroke:#3b82f6,stroke-width:2px,color:#e0e7ff
     classDef core fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#d1fae5
@@ -23,7 +23,7 @@ graph TD
     TRADE -->|"Closed Loss"| LEARN
     LEARN -->|"New Rules"| DB
     DB -->|"System Context"| AI
-\`;
+`;
 
 const dataFlow = `
 sequenceDiagram
