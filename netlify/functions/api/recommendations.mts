@@ -44,7 +44,7 @@ export default async (req: Request) => {
                         sentiment_score: sentiment_score != null ? Number(sentiment_score) : null,
                         sentiment_label: sentiment_label || null,
                         sentiment_evidence: typeof sentiment_evidence === 'object' ? JSON.stringify(sentiment_evidence) : (sentiment_evidence || null),
-                        conviction_score: conviction_score != null ? Number(conviction_score) : null,
+                        conviction_score: conviction_score != null ? Math.round(Number(conviction_score)) : null,
                         price_range_low: price_range_low != null ? Number(price_range_low) : null,
                         price_range_high: price_range_high != null ? Number(price_range_high) : null,
                         take_profit: !isNaN(tp) ? tp : null,

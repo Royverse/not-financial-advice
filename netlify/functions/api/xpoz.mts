@@ -24,9 +24,15 @@ function extractMcpText(rawData: unknown): string | null {
     // (b) SSE string — parse each "data: <json>" line
     if (typeof rawData === 'string') {
         for (const line of rawData.split('\n')) {
-            if (!line.startsWith('data: ')) continue;
+            const trimmed = line.trim();
+            if (!trimmed.startsWith('data:')) continue;
             try {
-                const parsed = JSON.parse(line.slice(6));
+                // Handle both "data: {..." and "data:{..."
+                const jsonStr = trimmed.startsWith('data: ') 
+                    ? trimmed.slice(6) 
+                    : trimmed.slice(5);
+                
+                const parsed = JSON.parse(jsonStr);
                 const text = parsed?.result?.content?.[0]?.text ?? parsed?.result?.text ?? null;
                 if (text) return text;
             } catch {
