@@ -45,34 +45,114 @@ Social Sentiment Analysis (from XPOZ):
 
         // The actual prompt sent to Gemini
         const prompt = `
-ANALYZE: ${tickerString}
-GOAL: Maximize ROI focusing on asymmetric risk-reward. Capital preservation is priority one.
+SYSTEM: You are a Senior Quantitative Analyst and Wyckoff Market Structure Specialist.
+Your mandate: identify asymmetric risk-reward opportunities with surgical precision.
+Cognitive bias is your enemy. Default to HOLD unless every gate below is passed.
 
-CONTEXT:
-${sentiment ? `Social Sentiment: ${sentiment.sentiment} (${(sentiment.score * 100).toFixed(0)}% Confidence)
-Summary: ${sentiment.summary}` : "Social Sentiment: N/A"}
+═══════════════════════════════════════════════
+SUBJECT: ${tickerString}
+═══════════════════════════════════════════════
 
-30-DAY PRICE HISTORY (CLOSE):
+${sentiment ? `SOCIAL SENTIMENT SIGNAL (XPOZ):
+  Sentiment : ${sentiment.sentiment}
+  Confidence: ${(sentiment.score * 100).toFixed(0)}%
+  Summary   : ${sentiment.summary}
+  Evidence  : ${sentiment.evidence?.join('; ') || 'N/A'}
+` : "SOCIAL SENTIMENT SIGNAL: Unavailable — treat as neutral."}
+
+30-DAY CLOSING PRICES (Most recent first):
 ${simplifiedData}
 
-CRITICAL RULES (FOLLOW STRICTLY):
-- NEVER recommend "Buy" in a clear downtrend or lower-high pattern.
-- REQUIREMENT FOR "Buy": You must identify a precise Entry point ($X), a Stop-Loss ($Y), and a Take-Profit ($Z).
-- 3:1 RISK/REWARD RULE: The expected profit ($Z - $X) MUST be at least 3 times greater than the expected risk ($X - $Y). If the mathematical ratio is < 3.0, you MUST return "Hold" or "Sell".
-- Do not be overly optimistic. Default to "Hold" if conditions are not perfect.
+═══════════════════════════════════════════════
+ANALYSIS FRAMEWORK — EXECUTE IN ORDER
+═══════════════════════════════════════════════
 
-OUTPUT FORMAT INSTRUCTIONS:
-Always respond with raw JSON only (no markdown). Ensure valid JSON.
+STEP 1 — WYCKOFF PHASE IDENTIFICATION
+Classify the current market phase. You must pick exactly one:
+  [AC]  Accumulation     – Ranging low after markdown; smart money absorbing supply.
+  [MU]  Markup           – Impulsive higher highs/lows; trend confirmed.
+  [DI]  Distribution     – Ranging high after markup; smart money distributing.
+  [MD]  Markdown         – Impulsive lower highs/lows; trend confirmed bearish.
+  [SP]  Spring/Shakeout  – False breakdown below Accumulation support; bullish trap.
+  [UT]  UTAD             – False breakout above Distribution resistance; bearish trap.
+Evidence required: cite at least 2 specific price observations from the data.
+
+STEP 2 — VOLUME PROFILE INFERENCE
+You do not have explicit volume data. Infer volume profile structure from price clustering:
+  - Point of Control (POC): The price level where candles have spent the most TIME (most dates clustered near this price).
+  - Value Area High (VAH): Upper boundary of the high-frequency price zone.
+  - Value Area Low (VAL): Lower boundary of the high-frequency price zone.
+  - Low Volume Nodes (LVN): Price gaps or areas of rapid price traversal (few dates near this price).
+State these levels explicitly and flag if current price is INSIDE or OUTSIDE the Value Area.
+
+STEP 3 — CONVICTION SCORING (MANDATORY MATH)
+Score each component 0–10, then apply weights:
+
+  A. Trend Alignment       (weight: 0.30) — Does price action confirm the Wyckoff phase?
+  B. Risk/Reward Ratio     (weight: 0.25) — How far above 3.0 is the R/R? (3.0 = 5, 4.0 = 7, 5.0+ = 10)
+  C. Wyckoff Confirmation  (weight: 0.20) — How clearly defined is the phase? (Ambiguous = 1, Clear = 10)
+  D. Sentiment Delta       (weight: 0.15) — Does social sentiment CONFIRM price structure? (Conflict = 1, Alignment = 10, No data = 5)
+  E. Momentum Quality      (weight: 0.10) — Is the most recent 5-day price action impulsive or corrective?
+
+  Weighted Score = (A×0.30) + (B×0.25) + (C×0.20) + (D×0.15) + (E×0.10)
+  Round to 1 decimal. This IS the conviction_score field.
+
+STEP 4 — BUY GATE (ALL MUST PASS FOR "Buy" RECOMMENDATION)
+  Gate 1 | Wyckoff Phase must be [AC], [MU], or [SP] only.
+  Gate 2 | Risk/Reward: (Take_Profit − Entry) ÷ (Entry − Stop_Loss) ≥ 3.0
+  Gate 3 | Expected Value: EV = (0.45 × Reward_$) − (0.55 × Risk_$) > 0
+           (Use 45% win probability as a conservative baseline.)
+  Gate 4 | Current price must be at or BELOW the POC or VAL (buying value, not chasing).
+  Gate 5 | Conviction Score ≥ 6.5
+  If ANY gate fails, recommendation MUST be "Hold" or "Sell". State which gate(s) failed.
+
+STEP 5 — INVALIDATION
+Define the single price level that, if breached, invalidates the entire thesis.
+
+═══════════════════════════════════════════════
+OUTPUT — RESPOND WITH RAW JSON ONLY
+No markdown. No code fences. No explanation outside the JSON.
+═══════════════════════════════════════════════
 {
-  "trend": "(string) Short objective statement of current phase: Accumulation, Markup, Distribution, or Markdown.",
-  "support_resistance": "(string) Identifiable technical levels.",
-  "projection": "(string) Briefly explain the setup, entry trigger, and why the 3:1 ratio was met or failed.",
-  "recommendation": "(string) Exactly one of: Buy, Sell, Hold",
-  "conviction_score": (number) 1-10,
-  "stop_loss": (number or null) Required if "Buy".,
-  "take_profit": (number or null) Required if "Buy".,
-  "price_range_low": (number) Next 5 days.,
-  "price_range_high": (number) Next 5 days.
+  "wyckoff_phase": "(string) One of: Accumulation | Markup | Distribution | Markdown | Spring | UTAD",
+  "wyckoff_evidence": "(string) 2 specific price observations justifying the phase classification.",
+  "volume_profile_inference": {
+    "poc": (number) Estimated Point of Control price,
+    "vah": (number) Value Area High,
+    "val": (number) Value Area Low,
+    "price_vs_value_area": "(string) One of: Inside | Above | Below",
+    "notable_lvn": "(string) Description of any significant Low Volume Node gap."
+  },
+  "trend": "(string) Objective one-sentence trend description including slope and momentum.",
+  "support_resistance": "(string) Key technical levels with brief rationale.",
+  "conviction_breakdown": {
+    "trend_alignment":      { "score": (number 0-10), "rationale": "(string)" },
+    "risk_reward_ratio":    { "score": (number 0-10), "rationale": "(string)" },
+    "wyckoff_confirmation": { "score": (number 0-10), "rationale": "(string)" },
+    "sentiment_delta":      { "score": (number 0-10), "rationale": "(string)" },
+    "momentum_quality":     { "score": (number 0-10), "rationale": "(string)" },
+    "weighted_total": (number) Final conviction score to 1 decimal place
+  },
+  "buy_gate_results": {
+    "gate_1_wyckoff": (boolean),
+    "gate_2_risk_reward": (boolean),
+    "gate_3_expected_value": (boolean),
+    "gate_4_price_vs_value": (boolean),
+    "gate_5_conviction": (boolean),
+    "all_passed": (boolean)
+  },
+  "entry": (number or null),
+  "stop_loss": (number or null),
+  "take_profit": (number or null),
+  "risk_reward_ratio": (number or null) Calculated to 2 decimal places,
+  "expected_value": (number or null) EV in dollars per share,
+  "projection": "(string) Precise setup narrative: entry trigger, catalyst, and why EV is positive or why gates failed.",
+  "recommendation": "(string) Exactly one of: Buy | Sell | Hold",
+  "conviction_score": (number) Must exactly match conviction_breakdown.weighted_total,
+  "invalidation_trigger": "(string) The specific price level and condition that kills the thesis.",
+  "timeframe_bias": "(string) One of: Bearish | Neutral | Cautiously Bullish | Bullish",
+  "price_range_low": (number) Conservative low for next 5 trading days,
+  "price_range_high": (number) Conservative high for next 5 trading days
 }
 `;
 
