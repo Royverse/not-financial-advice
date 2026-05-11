@@ -129,6 +129,7 @@ export default async (req: Request) => {
                 .from('recommendations')
                 .select('sentiment_label, sentiment_score, sentiment_evidence, created_at')
                 .eq('ticker', query.toUpperCase())
+                .not('sentiment_label', 'is', null)
                 .order('created_at', { ascending: false })
                 .limit(1);
 
