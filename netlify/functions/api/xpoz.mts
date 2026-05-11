@@ -107,11 +107,23 @@ function scoreSentiment(rawText: string) {
 }
 
 function extractTweets(rawText: string): string[] {
-    // XPOZ CSV format: "tweetId","text","author",...
-    const matches = rawText.match(/^\s*"\d+","([^"]+)"/gm) ?? [];
-    return matches
-        .map(m => m.match(/^\s*"\d+","(.*)"/)?.[ 1]?.replace(/\\n/g, ' ') ?? '')
-        .filter(t => t.length > 20 && !t.startsWith('http'));
+    const lines = rawText.split('\n');
+    const tweets: string[] = [];
+    
+    for (let line of lines) {
+        line = line.trim();
+        // Match format: "id",text,author,impressions,lang,"date"
+        const match = line.match(/^"\d+",(.*?),([^,]+),("[^"]+"|[^,]+),([^,]+),"[^"]+"$/);
+        if (match) {
+            let text = match[1];
+            if (text.startsWith('"') && text.endsWith('"')) {
+                text = text.slice(1, -1);
+            }
+            text = text.replace(/\\n/g, ' ');
+            tweets.push(text);
+        }
+    }
+    return tweets.filter(t => t.length > 20 && !t.startsWith('http'));
 }
 
 // ─── Handler ──────────────────────────────────────────────────────────────────
@@ -173,7 +185,7 @@ export default async (req: Request) => {
 
             const text = await mcpCall('tools/call', {
                 name: 'getTwitterPostsByKeywords',
-                arguments: { query, limit: 8 },
+                arguments: { query, limit: 8, responseType: 'paging' },
             });
 
             if (!text) return Response.json({ error: 'Failed to start XPOZ job — check function logs for details' }, { status: 500 });
@@ -235,8 +247,8 @@ export default async (req: Request) => {
 
         if (!text) return Response.json({ status: 'running' });
 
-        // XPOZ signals completion via either "success: true" or '"status": "succeeded"'
-        const isComplete = text.includes('success: true') || text.includes('"status": "succeeded"') || text.includes('"status":"succeeded"');
+        // XPOZ signals completion via status: success or similar
+        const isComplete = text.includes('status: success') || text.includes('"status": "success"') || text.includes('"status":"success"');
 
         if (!isComplete) {
             console.log(`[Xpoz] Job ${operationId} still running`);
