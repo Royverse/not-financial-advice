@@ -95,7 +95,18 @@ export function useStockData() {
         try {
             const xpozStartRes = await axios.post("/api/xpoz", { query: ticker });
 
-            if (xpozStartRes.data.operationId) {
+            // CASE A: Direct Result (Cache hit or fast scrape)
+            if (xpozStartRes.data.status === 'completed') {
+                sentimentResult = xpozStartRes.data.data;
+                setSentiment(sentimentResult);
+                updateStep('xpoz', {
+                    status: 'success',
+                    message: `Sentiment: ${sentimentResult?.sentiment} (${(sentimentResult?.score || 0) * 100}% confidence)`,
+                    duration: Date.now() - xpozStart
+                });
+            } 
+            // CASE B: Asynchronous Job (Polling)
+            else if (xpozStartRes.data.operationId) {
                 updateStep('xpoz', { message: `Operation started, polling for results...` });
                 const opId = xpozStartRes.data.operationId;
                 let attempts = 0;
@@ -138,7 +149,7 @@ export function useStockData() {
             } else {
                 updateStep('xpoz', {
                     status: 'error',
-                    message: 'No operation ID returned',
+                    message: 'No operation ID or data returned',
                     duration: Date.now() - xpozStart
                 });
             }
