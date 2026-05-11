@@ -5,7 +5,8 @@ const MODEL_PRIORITY = [
     'gemini-flash-latest',       // 1. Primary
     'gemini-flash-lite-latest',  // 2. Secondary
     'gemini-pro-latest',         // 3. Tertiary
-    'gemma-3-27b-it'             // 4. Safety Net
+    'gemma-4-26b-a4b-it',        // 4. Safety Net (updated to valid model name)
+    'gemini-2.0-flash'           // 5. Ultimate Fallback
 ];
 
 export class GeminiService {
@@ -46,13 +47,16 @@ export class GeminiService {
                 const status = error.response?.status;
 
                 console.warn(`[GeminiService] ❌ Failed with ${model}: ${status} - ${msg.substring(0, 100)}`);
-
-                // If it's a quota error (429) or not found (404), we continue to the next model.
-                // For other errors, we might also want to continue just in case, typical resilience pattern.
                 lastError = error;
+                
+                // If the API key is completely invalid, don't bother trying the other models
+                if (status === 400 && msg.includes('API key not valid')) {
+                    throw new Error('GEMINI_API_KEY is invalid.');
+                }
             }
         }
 
-        throw new Error(`All Gemini models failed. Last error: ${lastError?.message || 'Unknown error'}`);
+        const finalMsg = lastError?.response?.data?.error?.message || lastError?.message || 'Unknown error';
+        throw new Error(`All Gemini models failed (likely due to API quota limits). Last error: ${finalMsg}`);
     }
 }
