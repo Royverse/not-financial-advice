@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { supabase } from '../../../src/lib/services/supabase';
 
 const XPOZ_ENDPOINT = 'https://mcp.xpoz.ai/mcp';
 
@@ -59,7 +60,7 @@ async function mcpCall(method: string, params: Record<string, unknown>): Promise
                 Accept: 'application/json, text/event-stream',
             },
             // Keep well inside Netlify's 10s function timeout
-            timeout: 8000,
+            timeout: 9500,
             // Never throw on 4xx/5xx — we log and handle gracefully
             validateStatus: () => true,
         });
@@ -123,9 +124,36 @@ export default async (req: Request) => {
             const { query } = await req.json();
             if (!query) return Response.json({ error: 'query is required' }, { status: 400 });
 
+            // --- STEP 0: Check Cache ---
+            const { data: cached } = await supabase
+                .from('recommendations')
+                .select('sentiment_label, sentiment_score, sentiment_evidence, created_at')
+                .eq('ticker', query.toUpperCase())
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (cached && cached.length > 0) {
+                const age = Date.now() - new Date(cached[0].created_at).getTime();
+                const TWO_HOURS = 2 * 60 * 60 * 1000;
+                
+                if (age < TWO_HOURS) {
+                    console.log(`[Xpoz Cache] Hit for ${query}: ${cached[0].sentiment_label}`);
+                    return Response.json({
+                        status: 'completed',
+                        data: {
+                            sentiment: cached[0].sentiment_label,
+                            score: cached[0].sentiment_score,
+                            summary: `Retrieved from recent analysis (${Math.round(age / 60000)}m ago).`,
+                            volume: 'N/A',
+                            evidence: JSON.parse(cached[0].sentiment_evidence || '[]'),
+                        },
+                    });
+                }
+            }
+
             const text = await mcpCall('tools/call', {
                 name: 'getTwitterPostsByKeywords',
-                arguments: { query, limit: 20 },
+                arguments: { query, limit: 8 },
             });
 
             if (!text) return Response.json({ error: 'Failed to start XPOZ job — check function logs for details' }, { status: 500 });
