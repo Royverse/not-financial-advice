@@ -1,5 +1,5 @@
 import { supabase } from '../../../src/lib/services/supabase';
-import { GeminiService } from '../../../src/lib/services/gemini';
+import { AIService } from '../../../src/lib/services/ai';
 import axios from 'axios';
 
 const ALPHA_VANTAGE_API_KEY = process.env.ALPHA_VANTAGE_API_KEY;
@@ -78,9 +78,9 @@ export default async (req: Request) => {
 
     // 4. Check Gemini
     try {
-        const { text, model } = await GeminiService.generateContent("ping");
+        const { text, model } = await AIService.generateContent("ping", 'auto');
         status.services.gemini.status = 'healthy';
-        status.services.gemini.message = `${model} online`;
+        status.services.gemini.message = `AI Engine online`;
     } catch (e: any) {
         const errMsg = e.message;
         if (errMsg.includes('quota') || errMsg.includes('429')) {
