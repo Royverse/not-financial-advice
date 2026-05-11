@@ -5,8 +5,8 @@ const MODEL_PRIORITY = [
     'gemini-flash-latest',       // 1. Primary
     'gemini-flash-lite-latest',  // 2. Secondary
     'gemini-pro-latest',         // 3. Tertiary
-    'gemma-4-26b-a4b-it',        // 4. Safety Net (updated to valid model name)
-    'gemini-2.0-flash'           // 5. Ultimate Fallback
+    'gemini-2.0-flash',          // 4. Fallback
+    'gemma-4-26b-a4b-it'         // 5. Ultimate Safety Net
 ];
 
 export class GeminiService {
@@ -17,17 +17,26 @@ export class GeminiService {
         }
 
         let lastError = null;
+        const globalStart = Date.now();
+        const TIME_LIMIT = 8500; // 8.5 seconds limit to avoid Netlify 10s timeout (504)
 
         for (const model of MODEL_PRIORITY) {
+            const timeRemaining = TIME_LIMIT - (Date.now() - globalStart);
+            if (timeRemaining <= 500) {
+                console.warn(`[GeminiService] Global time limit reached. Aborting further model attempts.`);
+                lastError = lastError || new Error('Request took too long, aborting to prevent 504 timeout.');
+                break;
+            }
+
             try {
-                console.log(`[GeminiService] Attempting model: ${model}...`);
+                console.log(`[GeminiService] Attempting model: ${model} with ${timeRemaining}ms remaining...`);
                 const response = await axios.post(
                     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
                     {
                         contents: [{ parts: [{ text: prompt }] }]
                     },
                     {
-                        timeout: 30000, // 30s timeout
+                        timeout: timeRemaining, 
                         headers: {
                             'Content-Type': 'application/json'
                         }
@@ -57,6 +66,6 @@ export class GeminiService {
         }
 
         const finalMsg = lastError?.response?.data?.error?.message || lastError?.message || 'Unknown error';
-        throw new Error(`All Gemini models failed (likely due to API quota limits). Last error: ${finalMsg}`);
+        throw new Error(`All Gemini models failed or timed out. Last error: ${finalMsg}`);
     }
 }
