@@ -10,8 +10,10 @@ vi.mock('../lib/services/supabase', () => ({
         from: vi.fn(() => ({
             select: vi.fn(() => ({
                 eq: vi.fn(() => ({
-                    order: vi.fn(() => ({
-                        limit: vi.fn()
+                    not: vi.fn(() => ({
+                        order: vi.fn(() => ({
+                            limit: vi.fn()
+                        }))
                     }))
                 }))
             }))
@@ -39,7 +41,8 @@ describe('Xpoz Function - Latency and Caching', () => {
         // Mock Supabase chain
         const mockLimit = vi.fn().mockResolvedValue({ data: mockCachedData });
         const mockOrder = vi.fn(() => ({ limit: mockLimit }));
-        const mockEq = vi.fn(() => ({ order: mockOrder }));
+        const mockNot = vi.fn(() => ({ order: mockOrder }));
+        const mockEq = vi.fn(() => ({ not: mockNot }));
         const mockSelect = vi.fn(() => ({ eq: mockEq }));
         (supabase.from as any).mockReturnValue({ select: mockSelect });
 
@@ -64,7 +67,8 @@ describe('Xpoz Function - Latency and Caching', () => {
         // Mock empty cache
         const mockLimit = vi.fn().mockResolvedValue({ data: [] });
         const mockOrder = vi.fn(() => ({ limit: mockLimit }));
-        const mockEq = vi.fn(() => ({ order: mockOrder }));
+        const mockNot = vi.fn(() => ({ order: mockOrder }));
+        const mockEq = vi.fn(() => ({ not: mockNot }));
         const mockSelect = vi.fn(() => ({ eq: mockEq }));
         (supabase.from as any).mockReturnValue({ select: mockSelect });
 

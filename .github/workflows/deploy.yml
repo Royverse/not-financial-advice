@@ -30,8 +30,9 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
-          ALPHA_VANTAGE_API_KEY_2: ${{ secrets.ALPHA_VANTAGE_API_KEY_2 }}
           XPOZ_API_KEY: ${{ secrets.XPOZ_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
 
       - name: Validate Secrets & Environment Setup
         uses: actions/github-script@v7
@@ -40,6 +41,9 @@ jobs:
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          XPOZ_API_KEY: ${{ secrets.XPOZ_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         with:
           script: |
             const secrets = {
@@ -47,6 +51,9 @@ jobs:
               NETLIFY_SITE_ID: process.env.NETLIFY_SITE_ID,
               SUPABASE_URL: process.env.SUPABASE_URL,
               GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+              XPOZ_API_KEY: process.env.XPOZ_API_KEY,
+              OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
+              GROQ_API_KEY: process.env.GROQ_API_KEY,
             };
             
             console.log('--- SECRET VALIDATION LOG ---');
@@ -65,13 +72,8 @@ jobs:
             }
             console.log('-----------------------------');
 
-      - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v2.1
-        with:
-          publish-dir: ./out
-          production-deploy: true
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          functions-dir: ./netlify/functions-dist
+      - name: Deploy to Netlify (using CLI to prevent hangs)
+        run: npx netlify-cli deploy --prod --dir=out --functions=netlify/functions-dist
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

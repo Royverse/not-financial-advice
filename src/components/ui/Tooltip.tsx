@@ -1,29 +1,62 @@
 "use client";
 
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 interface TooltipProps {
     children: React.ReactNode;
-    content: string;
-    position?: "top" | "bottom";
+    content: React.ReactNode; // Can be string or elements
+    position?: "top" | "bottom"; // Keeping prop for backwards compatibility but always using top portal
 }
 
 export default function Tooltip({ children, content, position = "top" }: TooltipProps) {
-    const posClasses = position === "top" 
-        ? "bottom-full left-1/2 -translate-x-1/2 mb-2" 
-        : "top-full left-1/2 -translate-x-1/2 mt-2";
-    
-    const arrowClasses = position === "top"
-        ? "top-full left-1/2 -translate-x-1/2 border-t-secondary/95"
-        : "bottom-full left-1/2 -translate-x-1/2 border-b-secondary/95";
+    const [isVisible, setIsVisible] = useState(false);
+    const [pos, setPos] = useState({ top: 0, left: 0 });
+    const triggerRef = useRef<HTMLDivElement>(null);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const showTip = () => {
+        if (!triggerRef.current) return;
+        setIsVisible(true);
+        const rect = triggerRef.current.getBoundingClientRect();
+        
+        // Calculate position (top-centered above element)
+        setPos({ 
+            top: rect.top - 10,
+            left: rect.left + rect.width / 2 
+        });
+    };
+
+    const hideTip = () => setIsVisible(false);
 
     return (
-        <div className="group relative inline-block">
-            {children}
-            <div className={`absolute ${posClasses} w-48 p-3 bg-tooltip-bg/95 backdrop-blur-xl border border-white/10 rounded-2xl text-[10px] md:text-xs text-solarized-base1 group-hover:opacity-100 opacity-0 transition-all pointer-events-none z-[9999] text-center shadow-tooltip border-solarized-blue/20`}>
-                {content}
-                <div className={`absolute border-8 border-transparent ${arrowClasses} opacity-90`}></div>
+        <>
+            <div 
+                ref={triggerRef}
+                onMouseEnter={showTip}
+                onMouseLeave={hideTip}
+                onFocus={showTip}
+                onBlur={hideTip}
+                className="inline-block"
+            >
+                {children}
             </div>
-        </div>
+            {mounted && isVisible && createPortal(
+                <div 
+                    className="fixed z-[9999] pointer-events-none -translate-x-1/2 -translate-y-full"
+                    style={{ top: pos.top, left: pos.left }}
+                >
+                    <div className="bg-tooltip-bg/95 backdrop-blur-xl border border-white/10 rounded-xl px-3 py-2 text-[11px] text-solarized-base1 shadow-tooltip border-solarized-blue/20 max-w-[220px] whitespace-normal">
+                        {content}
+                    </div>
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-tooltip-bg/95 opacity-90"></div>
+                </div>,
+                document.body
+            )}
+        </>
     );
 }

@@ -15,9 +15,13 @@ export default async (req: Request) => {
             } = await req.json();
 
             let risk_reward_ratio = null;
-            if (take_profit && stop_loss && stock_price) {
-                const risk = stock_price - stop_loss;
-                const reward = take_profit - stock_price;
+            const tp = parseFloat(take_profit as string);
+            const sl = parseFloat(stop_loss as string);
+            const sp = parseFloat(stock_price as string);
+
+            if (!isNaN(tp) && !isNaN(sl) && !isNaN(sp)) {
+                const risk = sp - sl;
+                const reward = tp - sp;
                 if (risk > 0) risk_reward_ratio = Number((reward / risk).toFixed(2));
             }
 
@@ -35,16 +39,16 @@ export default async (req: Request) => {
                         support_resistance: supportResistanceStr,
                         projection: projectionStr,
                         recommendation: recommendation,
-                        stock_price: stock_price || null,
-                        rec_price: stock_price || null,
-                        sentiment_score: sentiment_score || null,
+                        stock_price: !isNaN(sp) ? sp : null,
+                        rec_price: !isNaN(sp) ? sp : null,
+                        sentiment_score: sentiment_score != null ? Number(sentiment_score) : null,
                         sentiment_label: sentiment_label || null,
-                        sentiment_evidence: sentiment_evidence || null,
-                        conviction_score: conviction_score || null,
-                        price_range_low: price_range_low || null,
-                        price_range_high: price_range_high || null,
-                        take_profit: take_profit || null,
-                        stop_loss: stop_loss || null,
+                        sentiment_evidence: typeof sentiment_evidence === 'object' ? JSON.stringify(sentiment_evidence) : (sentiment_evidence || null),
+                        conviction_score: conviction_score != null ? Number(conviction_score) : null,
+                        price_range_low: price_range_low != null ? Number(price_range_low) : null,
+                        price_range_high: price_range_high != null ? Number(price_range_high) : null,
+                        take_profit: !isNaN(tp) ? tp : null,
+                        stop_loss: !isNaN(sl) ? sl : null,
                         risk_reward_ratio: risk_reward_ratio,
                         created_at: new Date().toISOString(),
                     };
